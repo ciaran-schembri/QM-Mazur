@@ -44,7 +44,7 @@ end intrinsic;
 
 
 
-intrinsic TorsionHeuristicUpToTwistDivisibleBy(q::RngIntElt,IgusaClebsch::SeqEnum : bound:=300) -> RngIntElt
+intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=200, primes:=[]) -> RngIntElt
   {Given a Igusa-Clebsch invariants which define a curve over Q, check highest power of q that divides
   the cardinality of the point count of the Jacobian. This is done by reducing mod p
   for p up to a bound and up to twist. }
@@ -54,23 +54,42 @@ intrinsic TorsionHeuristicUpToTwistDivisibleBy(q::RngIntElt,IgusaClebsch::SeqEnu
   end if;
   assert Universe(IgusaClebsch) eq Rationals();
   badprimes:=PrimeDivisors(&*([ Denominator(I) : I in IgusaClebsch ] cat [Numerator(IgusaClebsch[4])])*30);
-  pointcount_modp:=[];
+  all_pointcounts:=[];
   for p in [ a : a in PrimesUpTo(bound) | a notin badprimes ] do
     IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p));
     pointcount_twists:=PointsCardinalityQuadraticTwistsFiniteField(IgusaClebschModp);
-    max:=Maximum([ Valuation(a,q) : a in pointcount_twists ]);
-    if max eq 0 then
-      return 1;
-    else
-      //[p,max];
-      Append(~pointcount_modp,max);
-    end if;
+    Append(~all_pointcounts,pointcount_twists);
   end for;
 
-  min_valuation:=Minimum(pointcount_modp);
-  return q^min_valuation;
+  if primes eq [] then
+    primes:=PrimeDivisors(&*(all_pointcounts[1]));
+  end if;
+  tors:=1;
+  for q in primes do
+    pointcount_modp:=[];
+    for point_count in all_pointcounts do
+      max:=Maximum([ Valuation(a,q) : a in point_count ]);
+      if max eq 0 then
+        Append(~pointcount_modp,max);
+        break;
+      else
+        //[q,max];
+        Append(~pointcount_modp,max);
+      end if;
+    end for;
+    min_valuation:=Minimum(pointcount_modp);
+    tors:=tors*q^min_valuation;
+  end for;
+  return tors;
 
 end intrinsic;
 
-
-//something wrong at p=67 with https://www.lmfdb.org/Genus2Curve/Q/464/a/464/1
+/*
+intrinsic ReduceWeightedProjectiveSpace(IC::SeqEnum) -> SeqEnum
+  {}
+  dens:=[ Denominator(a) : a in IC ];
+  p:=2;
+  pd:=[ Valuation(a,p) : a in dens ];
+  [ vs[1] - (vs[1] mod 2), vs[2] mod 4, vs[3] mod 6, vs[4] mod 10 ];
+  end intrinsic
+*/
