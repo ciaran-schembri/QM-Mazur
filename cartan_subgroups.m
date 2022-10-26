@@ -104,7 +104,7 @@ end intrinsic;
 /*
 non_split:=[];
 labels:=[];
-for p in [ p : p in PrimesUpTo(24) | p ne 2 ] do
+for p in [ p : p in PrimesUpTo(11) | p ne 2 ] do
   list:=SubgroupsOfNormalizerNonsplitCartan(p);
   for group in list do
     if group`IsSemidirect eq false then
