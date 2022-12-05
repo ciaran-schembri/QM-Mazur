@@ -100,9 +100,52 @@ intrinsic BabaGranathIgusaClebschDisc6(j::FldRatElt) -> SeqEnum
 end intrinsic;
 
 
+intrinsic BabaGranathIgusaClebschDisc10(j::FldRatElt) -> SeqEnum
+  {Given j from Baba-Granath's discriminant 10 family,
+  create the Igusa-Clebsch invariants of the curve associated to j.}
+  J2:=12*j^2-16*j+12;
+  J4:=6*j^4-16*j^3+6*j^2-16*j+6;
+  J6:=4*j^6-16*j^5+32*j^3-8*j^2-16*j+4;
+  J8:=(J2*J6-J4^2)/4;
+  J10:=j^4;
+  BGIgusa:=[J2,J4,J6,J8,J10];
 
-intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=150) -> RngIntElt
-  {Given a Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
+   //The Igusa-Clebsch invariants are
+  I2:=8*J2;
+  I4:=-96*J4+4*J2^2;
+  I6:=-(576*J6-8*J2^3+160*J2*J4);
+  I10:=4096*J10;
+  BGIC:=[I2,I4,I6,I10];
+
+  return BGIC;
+end intrinsic;
+
+
+
+intrinsic BabaGranathIgusaClebschDisc15(j::FldRatElt) -> SeqEnum
+  {Given j from Baba-Granath's discriminant 15 family,
+  create the Igusa-Clebsch invariants of the curve associated to j.}
+
+   //The Igusa-Clebsch invariants are
+  /*I2:=5^2;
+  I4:=4*j^2+64*j+121;
+  I6:=2^6*(j-1)^2*j;
+  I10:=2^4*(j^4+72*j^3+174*j^2+8*j+1);
+  BGIC:=[I2,I4,I6,I10];*/
+
+  I2:=5*(4*j+1);
+  I4:=4*j^2+190*j-5;
+  I6:=2^4*(j-1)^2*(j+3);
+  I10:=2^4*(j^4+15*j^3+105*j^2+125*j+10);
+  BGIC:=[I2,I4,I6,I10];
+
+  return BGIC;
+end intrinsic;
+
+
+
+intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=200) -> RngIntElt
+  {Given Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
   This is done by reducing mod p for p up to a bound and up to twist. }
 
   group_invs:=PrimaryAbelianInvariants(group);
@@ -118,20 +161,25 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
   invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
   all_possible_groups:=[ AbelianGroup(I) : I in invs ];
 
-  flag:=true;
+  flag_subgroup:=true;
   for p in primes do
     IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p));
     group_twists:=JacobianGroupTwistsFiniteField(IgusaClebschModp);
     grps:=&cat[ [ IntersectAbelianGroups(A,B) : B in group_twists ] : A in all_possible_groups ];
     invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in grps ]));
     all_possible_groups:=[ AbelianGroup(I) : I in invs ];
-    if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
-      flag:=false;
+    if invs eq [ [] ] then
       break p;
+    end if;
+    if group_invs ne [] then
+      if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
+        flag_subgroup:=false;
+        break p;
+      end if;
     end if;
   end for;
 
-  if flag eq false then
+  if flag_subgroup eq false then
     return "group not in torsion";
   else
     return all_possible_groups;
@@ -143,7 +191,7 @@ end intrinsic;
 
 
 
-intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=200, primes:=[], divisibleby:=-1) -> RngIntElt
+intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=150, primes:=[], divisibleby:=-1) -> RngIntElt
   {Given a Igusa-Clebsch invariants which define a curve over Q, check highest power of q that divides
   the cardinality of the point count of the Jacobian. This is done by reducing mod p
   for p up to a bound and up to twist. }
@@ -191,6 +239,24 @@ intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=20
   return tors;
 
 end intrinsic;
+
+
+/*
+PrimesWithTorsionModp(X::CrvHyp, G::GrpAb : bound:=200) -> SeqEnum
+  {Up to a bound, give the primes p for which G is a subgroup of the abelian surface mod p}
+  group_invs:=PrimaryAbelianInvariants(group);
+  if Universe(IgusaClebsch) eq Integers() then
+    ChangeUniverse(~IgusaClebsch,Rationals());
+  end if;
+  assert Universe(IgusaClebsch) eq Rationals();
+  badprimes:=PrimeDivisors(&*([ Denominator(I) : I in IgusaClebsch ] cat [Numerator(IgusaClebsch[4])])*30);
+  primes:=[ a : a in PrimesUpTo(bound) | a notin badprimes ];
+  for p in primes do
+    IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p));
+    group_twists:=JacobianGroupTwistsFiniteField(IgusaClebschModp);
+    Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ]))
+*/
+
 
 /*
 intrinsic ReduceWeightedProjectiveSpace(IC::SeqEnum) -> SeqEnum

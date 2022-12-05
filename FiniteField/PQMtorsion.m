@@ -2,6 +2,7 @@
 load "F2weil_polynomials.m";
 load "F3weil_polynomials.m";
 load "F5weil_polynomials.m";
+load "F7weil_polynomials.m";
 Rx<x>:=PolynomialRing(Rationals());
 
 //This functions makes a list the Weil polynomials of QM surfaces over F_q=F_{p^r}.
