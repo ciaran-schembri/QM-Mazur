@@ -28,16 +28,21 @@ while #torsion2_jsQ lt size do
     //for phi_perm in phi_perms do
       j:=Evaluate(phi_perms[4],Place(X![q,1]));
       //Index(phi_perms,phi_perm);
-      if j notin [-16/27, 0, 81/64] and Discriminant(QuaternionAlgebra< Rationals() | -6*j, -2*(27*j+16) >) eq 1 and j notin torsion2_jsQ then
+      if Discriminant(QuaternionAlgebra< Rationals() | -6*j, -2*(27*j+16) >) ne 1 then
+        j;
+      end if;
+      //< j, Discriminant(QuaternionAlgebra< Rationals() | -6*j, -2*(27*j+16) >) eq 1>;
+      /*if j notin [-16/27, 0, 81/64] and Discriminant(QuaternionAlgebra< Rationals() | -6*j, -2*(27*j+16) >) eq 1 and j notin torsion2_jsQ then
         Append(~torsion2_jsQ,j);
-        j; IgusaClebsch:=BabaGranathIgusaClebschDisc6(j);
+        //j;
+        IgusaClebsch:=BabaGranathIgusaClebschDisc6(j);
         tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100);
         invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
         inv:=Sprint(invr_heur);
         Append(~primary_torsion,inv);
-        data:=Sprintf("%o|%o",IgusaClebsch, inv); data;
+        data:=Sprintf("%o|%o",IgusaClebsch, inv); //data;
         //PrintFile("Data/X*(6,1)-curves.m",data);
-      end if;
+      end if;*/
     //end for;
   end for;
 end while;
