@@ -41,3 +41,5 @@ for d in [ a : a in [-20..-1] cat [1..20] | IsSquarefree(a) ] do
   Ed;
   IsIsomorphic(E,Ed);
 end for;
+
+//testing toby
