@@ -44,3 +44,65 @@ end for;
 for v in [20..100] do
   Discriminant(QuaternionAlgebra< Rationals() | Evaluate(num_a1,v)/Evaluate(den_a1,v), Evaluate(num_b1,v)/Evaluate(den_b1,v) >);
 end for;
+
+
+f:=Rx!(x^4 - 2*x^3 + 2*x^2 + 2*x + 1)*(x^4 + 2*x^3 + 2*x^2 - 2*x + 1);
+for v in [20..100] do
+  Discriminant(QuaternionAlgebra< Rationals() | -2*Evaluate(f,v), 3 >);
+end for;
+
+
+j:=(-64*x^20 + 256*x^16 - 384*x^12 + 256*x^8 - 64*x^4)/(x^24 + 42*x^20 + 591*x^16 + 2828*x^12 + 591*x^8 + 42*x^4 + 1);
+j:=phi;
+J2:=12*(j+1);
+J4:=6*(j^2+j+1);
+J6:=4*(j^3-2*j^2+1);
+J8:=(J2*J6-J4^2)/4;
+J10:=j^3;
+BG6Igusa:=[J2,J4,J6,J8,J10];
+C:=HyperellipticCurveFromIgusaInvariants(BG6Igusa);
+
+f,g:=HyperellipticPolynomials(C);
+Kz<z>:=Parent(f);
+f:=Kz!f
+coefs:=Coefficients(f);
+fac:=Factorization(f);
+
+f1:=fac[1,1];
+f2:=fac[2,1];
+f3:=fac[3,1];
+
+assert Discriminant(f1) eq Coefficients(f1)[2]^2 - 4*1*Coefficients(f1)[1];
+
+disc1:=Discriminant(f1);
+disc2:=Discriminant(f2);
+disc3:=Discriminant(f3);
+
+
+
+height_init:=1;
+small_ht:=Setseq(Set([ a/b : a,b in [-height_init..height_init] | a*b ne 0 ]));
+list:=[];
+size:=10000;
+height:=height_init;
+while #list lt size do
+  extra_a:=[ height/b : b in [-height..height] | b ne 0 and GCD(height,b) eq 1 ];
+  extra_b:=[ a/height : a in [-height..height] | a ne 0 and GCD(height,a) eq 1 ];
+  extra := extra_a cat extra_b;
+  height:=height+1;
+  for q in extra do
+    d1:=Evaluate(disc1,q);
+    d2:=Evaluate(disc2,q);
+    d3:=Evaluate(disc3,q);
+
+    tr1:=IsSquare(d1);
+    tr2:=IsSquare(d2);
+    tr3:=IsSquare(d3);
+
+    if tr1 or tr2 or tr3 then
+      q;
+      d1; d2; d3;
+      print "/////////////////";
+    end if;
+  end for;
+end while;

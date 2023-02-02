@@ -46,20 +46,6 @@ intrinsic IntersectAbelianGroups(A::GrpAb,B::GrpAb) -> GrpAb
   return AbelianGroup(maximal_intersects[1]);
 end intrinsic;
 
-  /*end for;
-  sort:=function(I,J);
-    if I subset J then
-      return 1;
-    elif J subset I then
-      return -1;
-    else
-      assert true eq false;
-    end if;
-  end function;
-  Sort(intersect, sort);
-  maximal_intersect:=AbelianGroup(intersect[#intersect]);*/
-
-
 
 
 
@@ -77,75 +63,9 @@ intrinsic JacobianGroupTwistsFiniteField(IgusaClebschModp::SeqEnum) -> SeqEnum
 end intrinsic;
 
 
-intrinsic BabaGranathIgusaClebschDisc6(j::FldRatElt) -> SeqEnum
-  {Given j from Baba-Granath's discriminant 6 family,
-  create the Igusa-Clebsch invariants of the curve associated to j.}
-
-  // The Igusa invariants from Baba-Granath for D=6
-  J2:=12*(j+1);
-  J4:=6*(j^2+j+1);
-  J6:=4*(j^3-2*j^2+1);
-  J8:=(J2*J6-J4^2)/4;
-  J10:=j^3;
-  BG6Igusa:=[J2,J4,J6,J8,J10];
-
-  //The Igusa-Clebsch invariants are
-  I2:=8*J2;
-  I4:=-96*J4+4*J2^2;
-  I6:=-(576*J6-8*J2^3+160*J2*J4);
-  I10:=4096*J10;
-  BG6IC:=[I2,I4,I6,I10];
-
-  return BG6IC;
-end intrinsic;
-
-
-intrinsic BabaGranathIgusaClebschDisc10(j::FldRatElt) -> SeqEnum
-  {Given j from Baba-Granath's discriminant 10 family,
-  create the Igusa-Clebsch invariants of the curve associated to j.}
-  J2:=12*j^2-16*j+12;
-  J4:=6*j^4-16*j^3+6*j^2-16*j+6;
-  J6:=4*j^6-16*j^5+32*j^3-8*j^2-16*j+4;
-  J8:=(J2*J6-J4^2)/4;
-  J10:=j^4;
-  BGIgusa:=[J2,J4,J6,J8,J10];
-
-   //The Igusa-Clebsch invariants are
-  I2:=8*J2;
-  I4:=-96*J4+4*J2^2;
-  I6:=-(576*J6-8*J2^3+160*J2*J4);
-  I10:=4096*J10;
-  BGIC:=[I2,I4,I6,I10];
-
-  return BGIC;
-end intrinsic;
-
-
-
-intrinsic BabaGranathIgusaClebschDisc15(j::FldRatElt) -> SeqEnum
-  {Given j from Baba-Granath's discriminant 15 family,
-  create the Igusa-Clebsch invariants of the curve associated to j.}
-
-   //The Igusa-Clebsch invariants are
-  /*I2:=5^2;
-  I4:=4*j^2+64*j+121;
-  I6:=2^6*(j-1)^2*j;
-  I10:=2^4*(j^4+72*j^3+174*j^2+8*j+1);
-  BGIC:=[I2,I4,I6,I10];*/
-
-  I2:=5*(4*j+1);
-  I4:=4*j^2+190*j-5;
-  I6:=2^4*(j-1)^2*(j+3);
-  I10:=2^4*(j^4+15*j^3+105*j^2+125*j+10);
-  BGIC:=[I2,I4,I6,I10];
-
-  return BGIC;
-end intrinsic;
-
-
 
 intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=200) -> RngIntElt
-  {Given Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
+  {Given a Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
   This is done by reducing mod p for p up to a bound and up to twist. }
 
   group_invs:=PrimaryAbelianInvariants(group);
