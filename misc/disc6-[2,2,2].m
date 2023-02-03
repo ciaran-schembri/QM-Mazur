@@ -35,6 +35,7 @@ for d in [ a : a in [-20..-1] cat [1..20] | IsSquarefree(a) ] do
   fXd:=Rx!Evaluate(gX,x^2/d);
   fXd;
   Xd:=HyperellipticCurve(fXd,0);
+  Points(IntegralModel(Xd) : Bound:=100);
   F<u,v>:=FunctionField(Xd);
   psi:=iso< Xd -> Xd | [-u,v,1],[-u,v,1] >;
   Ed:=CurveQuotient(AutomorphismGroup(Xd,[psi]));

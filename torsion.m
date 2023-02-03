@@ -160,6 +160,21 @@ intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=15
 
 end intrinsic;
 
+intrinsic NaiveTorsionSearchTwist(X::CrvHyp, primary_invariants::SeqEnum : bound:=10000) -> CrvHyp
+  {}
+  d:=1;
+  while d lt bound do
+    for t in [d,-d] do
+      Xd:=QuadraticTwist(X,t);
+      if PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(Xd))) eq primary_invariants then
+        return Xd;
+      end if;
+    end for;
+    d:=d+1;
+  end while;
+  return "no torsion found";
+end intrinsic;
+
 
 /*
 PrimesWithTorsionModp(X::CrvHyp, G::GrpAb : bound:=200) -> SeqEnum

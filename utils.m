@@ -18,7 +18,7 @@ intrinsic read_data(file::MonStgElt) -> Any
 
   RF := recformat< n : Integers(),
   IgusaClebsch,
-  TorsionHeursiticTwist
+  TorsionHeuristicTwist
    >;
   s := rec< RF | >;
   list:=[];
@@ -26,21 +26,27 @@ intrinsic read_data(file::MonStgElt) -> Any
   for line in lines do
     items:=Split(line,"|");
     s`IgusaClebsch:=eval(items[1]);
-    s`TorsionHeursiticTwist:=eval(items[2]);
+    s`TorsionHeuristicTwist:=eval(items[2]);
     Append(~list,s);
   end for;
 
   return list;
 end intrinsic;
 
-intrinsic HeuristicNontrivialTorsion(file::MonStgElt) -> Any
+intrinsic HeuristicNontrivialTorsion(file::MonStgElt : TorsionGroup:=[]) -> Any
   {return the curves who have an order 4 torsion subgroups from the heuristics.}
   lines:=read_data(file);
   data:=[];
-  for s in lines do
-    if Sprint(s`TorsionHeursiticTwist) ne Sprint(<[]>) then
+  if TorsionGroup eq [] then
+    for s in lines do
       Append(~data,s);
-    end if;
-  end for;
+    end for;
+  else
+    for s in lines do
+      if Sprint(TorsionGroup) in Sprint(s`TorsionHeuristicTwist) then
+        Append(~data,s);
+      end if;
+    end for;
+  end if;
   return data;
 end intrinsic;

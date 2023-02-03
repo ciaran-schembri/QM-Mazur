@@ -1,6 +1,6 @@
 AttachSpec("../CHIMP/CHIMP.spec");
 Rx<x>:=PolynomialRing(Rationals());
-prec := 500;
+prec := 1000;
 F := RationalsExtra(prec);
 ///////////////////////////
 //(Z/2Z)^2
@@ -22,6 +22,8 @@ MinimalPolynomial(b);
 assert Discriminant(NumberField(MinimalPolynomial(b))) eq 12;
 
 
+L:=HeuristicEndomorphismFieldOfDefinition(X);
+L;
 
 ////////////////////////////////
 //(Z/3)^2
@@ -32,7 +34,7 @@ assert PrimaryAbelianInvariants(T) eq [3,3];
 //T; (Z/3)^2;
 
 X := ChangeRing(C,F);
-_,B:=HeuristicEndomorphismAlgebra(X : Geometric:=true);
+_,B:=HeuristicEndomorphismAlgebra(X : CC:=true);
 assert IsQuaternionAlgebra(B);
 
 _,E:=HeuristicEndomorphismAlgebra(X : Geometric:=false);
@@ -42,6 +44,13 @@ b:=Basis(E)[2];
 MinimalPolynomial(b);
 assert Discriminant(NumberField(MinimalPolynomial(b))) eq 8;
 
+L:=HeuristicEndomorphismFieldOfDefinition(X);
+L;
+
+for d in [a : a in [-20..-1] cat [1..20] | IsSquarefree(a) ] do
+  Xd:=QuadraticTwist(X,d);
+  Degree(HeuristicEndomorphismFieldOfDefinition(Xd));
+end for;
 //R:=HeuristicEndomorphismRepresentation(X : Geometric:=false);
 
 
