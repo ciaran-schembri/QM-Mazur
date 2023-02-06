@@ -12,7 +12,9 @@ sigma := [ Sym(24) |
 SetVerbose("Shimura", true);
 Gamma := TriangleSubgroup(sigma);
 X, phi := BelyiMap(Gamma : prec := 200);
-=====
+
+
+===============================
 
 I extracted the curve coefficients from the intermediate step, like I
 mentioned.  I get the curve:
