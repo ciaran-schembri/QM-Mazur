@@ -1,3 +1,0 @@
-HyperellipticCurve([Polynomial([RationalField() | -634465, -540930, -43680, 234260, 602160, 345930, 17095]), Polynomial([RationalField() |])])||Polynomial([RationalField() | 9, -3, -2, -1, 1])||4||[ 3 ]
-HyperellipticCurve([Polynomial([RationalField() | -641111, 1093308, -1432758, 2596157, 266910, -1634196, 492497]), Polynomial([RationalField() |])])||Polynomial([RationalField() | 1296, 36, 37, -1, 1])||4||[ 3 ]
-HyperellipticCurve([Polynomial([RationalField() | 141426385, -34922295, -180275250, 55142325, -86722875, 68733030, 39351265]), Polynomial([RationalField() |])])||Polynomial([RationalField() | 196, -14, -13, -1, 1])||4||[ 3 ]

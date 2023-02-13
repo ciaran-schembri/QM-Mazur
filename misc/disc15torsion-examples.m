@@ -49,7 +49,8 @@ IgusaClebsch:=[ -20495360/177147, 211980124160/1162261467,
 3040059690390169 ];
 X:=HyperellipticCurveFromIgusaClebsch(ChangeUniverse(IgusaClebsch,Rationals()));
 C:=ReducedWamelenModel(X);
-//C:=HyperellipticCurve([Polynomial([RationalField() | 0, 300, 0, -325, -255, -303, -153]), Polynomial([RationalField() |])])
+//C:=HyperellipticCurve([Polynomial([RationalField() | 0, 300, 0, -325, -255, -303, -153]), Polynomial([RationalField() |])]);
+J:=Jacobian(C);
 T:=TorsionSubgroup(J);
 assert PrimaryAbelianInvariants(T) eq [2,2];
 
@@ -61,6 +62,11 @@ B;
 tr,D:=IsQuaternionAlgebra(B);
 assert tr;
 assert Discriminant(D) eq 15;
+
+  X := ChangeRing(C,F);
+  _,D:=HeuristicEndomorphismAlgebra(X : Geometric:=false);  
+  assert Dimension(D) eq 1;
+  Factorization(Conductor(C));
 
 ////////////////////////////////////////////////
 //Z/6 twist search
