@@ -47,6 +47,29 @@ intrinsic IntersectAbelianGroups(A::GrpAb,B::GrpAb) -> GrpAb
 end intrinsic;
 
 
+intrinsic IsSubgroup(A::GrpAb, B::GrpAb) -> BoolElt
+  {Is A a subgroup of B?}
+  pA:=PrimaryAbelianInvariants(A);
+  pB:=PrimaryAbelianInvariants(B);
+  if pA eq [] then 
+    return true; 
+  elif pB eq [] then 
+    return false;
+  else 
+    C:=IntersectAbelianGroups(A,B);
+    pC:=PrimaryAbelianInvariants(C);
+    if pC eq pA then 
+      return true;
+    else 
+      return false;
+    end if;
+  end if;
+end intrinsic;
+
+
+    
+ 
+
 
 
 
@@ -166,7 +189,7 @@ intrinsic NaiveTorsionSearchTwist(X::CrvHyp, primary_invariants::SeqEnum : bound
   while d lt bound do
     for t in [d,-d] do
       Xd:=QuadraticTwist(X,t);
-      if PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(Xd))) eq primary_invariants then
+      if IsSubgroup(AbelianGroup(primary_invariants),TorsionSubgroup(Jacobian(Xd))) then
         return Xd;
       end if;
     end for;
@@ -174,6 +197,8 @@ intrinsic NaiveTorsionSearchTwist(X::CrvHyp, primary_invariants::SeqEnum : bound
   end while;
   return "no torsion found";
 end intrinsic;
+
+
 
 
 /*
