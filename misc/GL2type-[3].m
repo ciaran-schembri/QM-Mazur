@@ -3,7 +3,7 @@ AttachSpec("../CHIMP/CHIMP.spec");
 Rx<x>:=PolynomialRing(Rationals());
 prec := 1000;
 F := RationalsExtra(prec);
-list:=HeuristicNontrivialTorsion("../PQMdata/Data/X*(15,1)-curves.m": TorsionGroup:=[3]);
+list:=HeuristicNontrivialTorsion("PQMdata/data/X*(15,1)-curves.m": TorsionGroup:=[3]);
 
 for s in list do
   IgusaClebsch:=ChangeUniverse(s`IgusaClebsch,Rationals());

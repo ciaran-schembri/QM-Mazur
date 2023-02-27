@@ -1,9 +1,8 @@
 //create igusa clebsch invariants with certain properties like 2-torsion.
 
-AttachSpec("spec");
-
-
-intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, LinYang:=true, j_list:=[]) -> Any
+Rx<x>:=PolynomialRing(Rationals());
+//BelyiMap:=-1/27*(x*(x-3)^2/4);
+intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, LinYang:=true, j_list:=[], BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
   {}
   Rx<x>:=PolynomialRing(Rationals());
   prec := 500;
@@ -15,7 +14,7 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
     small_ht:=Setseq(Set([ a/b : a,b in [-height_init..height_init] | a*b ne 0 ]));
 
     torsion_jsQ:=[];
-    size:=100;
+    size:=size;
     height:=height_init;
     while #torsion_jsQ lt size do
       height:=height+1;
@@ -23,32 +22,31 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
       extra_b:=[ a/height : a in [-height..height] | a ne 0 and GCD(height,a) eq 1 ];
       extra := extra_a cat extra_b;
       for q in extra do
-        j:=q;
-        if MestreObstructionIsSplit(D,j) then
+        j:=Evaluate(BelyiMap,q);
+        //if MestreObstructionIsSplit(D,j) then
           IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
-          C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
-          if BaseRing(C) eq Rationals() then
-            if torsion eq true then
-              tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100);
-              invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
-              inv:=Sprint(invr_heur);
-              data:=Sprintf("%o|%o",IgusaClebsch, inv); data;
-              Append(~torsion_jsQ,j);
-              //PrintFile("Data/X*(15,1)-curves.m",data);
+          if torsion eq true then
+            tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100);
+            invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
+            inv:=Sprint(invr_heur);
+            data:=Sprintf("%o||%o",IgusaClebsch, inv); data;
+            Append(~torsion_jsQ,j);
+            if WriteToFile ne "" then 
+              PrintFile(WriteToFile,data);
             end if;
-
-            if endomorphisms eq true then
-              X:=ReducedWamelenModel(C);
-              X;
-              XF := ChangeRing(X,F);
-              _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
-              B;
-              tr,A:=IsQuaternionAlgebra(B);
-              tr;
-              if tr then Discriminant(A); end if;
-            end if;
-
           end if;
+
+          if endomorphisms eq true then
+            C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+            X:=ReducedWamelenModel(C);
+            X;
+            XF := ChangeRing(X,F);
+            _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
+            B;
+            tr,A:=IsQuaternionAlgebra(B);
+            tr;
+            if tr then Discriminant(A); end if;
+          //end if;
         end if;
       end for;
     end while;

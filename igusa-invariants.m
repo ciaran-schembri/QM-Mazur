@@ -82,15 +82,16 @@ intrinsic PQMIgusaClebschDisc15(j::FldRatElt : LinYang:=true) -> SeqEnum
   I10:=2*(j+3)^6*(j-1)^12;
   BGIC:=[I2,I4,I6,I10];*/
 
-  s2:=5^2;  //First in Lin-Yang
+
+  /*s2:=5^2;  //First in Lin-Yang
   s3:=4*j^2+64*j+121;
   s5:=2^6*(j-1)^2*j;
-  s6:=2^4*(j^4+72*j^3+174*j^2+8*j+1);
+  s6:=2^4*(j^4+72*j^3+174*j^2+8*j+1);*/
 
-  /*s2:=5*(4*j+1);  //Second in Lin-Yang
+  s2:=5*(4*j+1);  //Second in Lin-Yang
   s3:=4*j^2+190*j-5;
   s5:=2^4*(j-1)^2*(j+3);
-  s6:=2^4*(j^4+15*j^3+105*j^2+125*j+10);*/
+  s6:=2^4*(j^4+15*j^3+105*j^2+125*j+10);
 
   psi4:=s2;
   psi6:=s3;
@@ -208,7 +209,17 @@ end intrinsic;
 
 intrinsic MestreObstructionIsSplit(D::RngIntElt, j::FldRatElt) -> BoolElt
   {Mestre obstruction}
-  if D eq 26 then
+  
+  if D eq 15 then
+    a:=-15*j;
+    b:=-3*(j+3)*(27*j+1);
+    if a*b ne 0 then 
+      H:=QuaternionAlgebra<Rationals() | a , b >;
+      return Discriminant(H) eq 1;
+    else 
+      return false;
+    end if;
+  elif D eq 26 then
     H:=QuaternionAlgebra<Rationals() | -26*j, -13*(2*j^3-19*j^2+24*j+169) >;
     return Discriminant(H) eq 1;
   elif D eq 38 then
