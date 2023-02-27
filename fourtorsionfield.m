@@ -75,9 +75,9 @@ end function;
 
 // Example
 
-R<x> := PolynomialRing(Rationals());
+/*R<x> := PolynomialRing(Rationals());
 C := HyperellipticCurve(R![0, 0, 0, 0, 1, 1], R![1, 1, 0, 1]);
 twotorspol, gens := fourtorsionfield(C);
 twotorspol, #gens;
 twotorspol, gens := fourtorsionfield(C : simplified := true);
-twotorspol, #gens;
+twotorspol, #gens;*/

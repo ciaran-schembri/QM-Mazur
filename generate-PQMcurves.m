@@ -1,6 +1,5 @@
 //create igusa clebsch invariants with certain properties like 2-torsion.
 
-AttachSpec("spec");
 
 
 intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, LinYang:=true, j_list:=[]) -> Any

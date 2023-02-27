@@ -8,9 +8,22 @@ f6 := x*(x-8064)*(x-9464)*(x-12600)*(x-13689);
 f7 := x*(x-22400)*(x-24336)*(x-32400)*(x-38025);
 f8 := x*(x-32256)*(x-37856)*(x-50400)*(x-54756);
 
+prec := 1000;
+F := RationalsExtra(prec);
+
 fs := [f1,f2,f3,f4,f5,f6,f7,f8];
 for f in fs do
     C := HyperellipticCurveOfGenus(2,f);
     twotorspol, gens := fourtorsionfield(C : simplified := true);
     print #gens, gens;
+
+    X := ChangeRing(C,F);
+    _,B:=HeuristicEndomorphismAlgebra(X : CC:=true);
+    B;
+    _,D:=HeuristicEndomorphismAlgebra(X : Geometric:=false);
+    D;
+    L:=HeuristicEndomorphismFieldOfDefinition(X);
+    L;
+
 end for;
+
