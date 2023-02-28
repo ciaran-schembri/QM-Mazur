@@ -3,7 +3,7 @@ SetColumns(0);
 intrinsic PointsCardinalityTwistsFiniteField(IgusaClebschModp::SeqEnum) -> SeqEnum
   {Given Igusa-Clebsch invariants over a finite field F_p,
    create a genus 2 curve from these invariants defined over F_p.
-    Return the point count of the Jacobian of this curve and it's twist}
+    Return the point count of the Jacobian of this curve and its twist}
 
   Rx<x>:=PolynomialRing(Integers());
   assert Characteristic(Universe(IgusaClebschModp)) gt 0;
@@ -71,12 +71,21 @@ end intrinsic;
  
 
 
+intrinsic JacobianGroupTwistsFiniteField(Cp::CrvHyp) -> SeqEnum
+  {Given C_p over a finite field F_p, return the point count of the Jacobian of this curve and its twists}
+
+  assert Characteristic(BaseRing(Cp)) gt 0;
+  twists:=Twists(Cp);
+  return [ AbelianGroup(Jacobian(X)) : X in twists ];
+
+end intrinsic;
+
 
 
 intrinsic JacobianGroupTwistsFiniteField(IgusaClebschModp::SeqEnum) -> SeqEnum
   {Given Igusa-Clebsch invariants over a finite field F_p,
    create a genus 2 curve from these invariants defined over F_p.
-    Return the point count of the Jacobian of this curve and it's twist}
+    Return the point count of the Jacobian of this curve and its twists}
 
   assert Characteristic(Universe(IgusaClebschModp)) gt 0;
   Cp:=HyperellipticCurveFromIgusaClebsch(IgusaClebschModp);
@@ -87,10 +96,11 @@ end intrinsic;
 
 
 
-intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=200) -> RngIntElt
+intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=200, exponent:=1) -> RngIntElt
   {Given a Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
   This is done by reducing mod p for p up to a bound and up to twist. }
 
+  e:=exponent;
   group_invs:=PrimaryAbelianInvariants(group);
   if Universe(IgusaClebsch) eq Integers() then
     ChangeUniverse(~IgusaClebsch,Rationals());
@@ -99,15 +109,58 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
   badprimes:=PrimeDivisors(&*([ Denominator(I) : I in IgusaClebsch ] cat [Numerator(IgusaClebsch[4])])*30);
   primes:=[ a : a in PrimesUpTo(bound) | a notin badprimes ];
   possible_groups:=[];
-  IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(primes[1]));
+  IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(primes[1]^e));
   all_possible_groups:=JacobianGroupTwistsFiniteField(IgusaClebschModp);
   invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
   all_possible_groups:=[ AbelianGroup(I) : I in invs ];
 
   flag_subgroup:=true;
   for p in primes do
-    IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p));
+    IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p^e));
     group_twists:=JacobianGroupTwistsFiniteField(IgusaClebschModp);
+    grps:=&cat[ [ IntersectAbelianGroups(A,B) : B in group_twists ] : A in all_possible_groups ];
+    invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in grps ]));
+    all_possible_groups:=[ AbelianGroup(I) : I in invs ];
+    if invs eq [ [] ] then
+      break p;
+    end if;
+    if group_invs ne [] then
+      if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
+        flag_subgroup:=false;
+        break p;
+      end if;
+    end if;
+  end for;
+
+  if flag_subgroup eq false then
+    return "group not in torsion";
+  else
+    return all_possible_groups;
+  end if;
+
+end intrinsic;
+
+
+intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bound:=200) -> RngIntElt
+  {Given a hyperelliptic curve over a number field, check the biggest possible prime power torsion of the Jacobian.
+  This is done by reducing mod p for p up to a bound and up to twist.}
+
+  assert Type(BaseRing(C)) eq FldNum;
+  K:=BaseRing(C);
+  OK:=Integers(K);
+  group_invs:=PrimaryAbelianInvariants(group);
+
+  primes:=[ a : a in PrimesUpTo(bound,K) | GCD(Discriminant(C)*2*OK,a) eq 1*OK ];
+  possible_groups:=[];
+  Cp:=ChangeRing(C,ResidueClassField(primes[1]));
+  all_possible_groups:=JacobianGroupTwistsFiniteField(Cp);
+  invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
+  all_possible_groups:=[ AbelianGroup(I) : I in invs ];
+
+  flag_subgroup:=true;
+  for p in primes do
+    Cp:=ChangeRing(C,ResidueClassField(p));
+    group_twists:=JacobianGroupTwistsFiniteField(Cp);
     grps:=&cat[ [ IntersectAbelianGroups(A,B) : B in group_twists ] : A in all_possible_groups ];
     invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in grps ]));
     all_possible_groups:=[ AbelianGroup(I) : I in invs ];
@@ -133,9 +186,8 @@ end intrinsic;
 
 
 
-
 intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=150, primes:=[], divisibleby:=-1) -> RngIntElt
-  {Given a Igusa-Clebsch invariants which define a curve over Q, check highest power of q that divides
+  {Given Igusa-Clebsch invariants which define a curve over Q, check highest power of q that divides
   the cardinality of the point count of the Jacobian. This is done by reducing mod p
   for p up to a bound and up to twist. }
 

@@ -70,7 +70,7 @@ end intrinsic;
 
 
 intrinsic PQMIgusaClebschDisc15(j::FldRatElt : LinYang:=true) -> SeqEnum
-  {Given j from Baba-Granath's discriminant 15 family,
+  {Given j from Baba-Granaths discriminant 15 family,
   create the Igusa-Clebsch invariants of the curve associated to j.}
 
    //The Igusa-Clebsch invariants are

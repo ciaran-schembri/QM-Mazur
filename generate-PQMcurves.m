@@ -2,7 +2,7 @@
 
 Rx<x>:=PolynomialRing(Rationals());
 //BelyiMap:=-1/27*(x*(x-3)^2/4);
-intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, LinYang:=true, j_list:=[], BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
+intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, LinYang:=true, j_list:=[],MestreIsSplit:=false, exponent:=1, BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
   {}
   Rx<x>:=PolynomialRing(Rationals());
   prec := 500;
@@ -23,10 +23,10 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
       extra := extra_a cat extra_b;
       for q in extra do
         j:=Evaluate(BelyiMap,q);
-        //if MestreObstructionIsSplit(D,j) then
+        if MestreIsSplit eq false or (MestreIsSplit eq true and MestreObstructionIsSplit(D,j)) then  
           IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
           if torsion eq true then
-            tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100);
+            tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100,exponent:=exponent);
             invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
             inv:=Sprint(invr_heur);
             data:=Sprintf("%o||%o",IgusaClebsch, inv); data;
@@ -38,7 +38,11 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
 
           if endomorphisms eq true then
             C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
-            X:=ReducedWamelenModel(C);
+            if BaseRing(C) eq Rationals() then 
+              X:=ReducedWamelenModel(C);
+            else 
+              X:=C;
+            end if;
             X;
             XF := ChangeRing(X,F);
             _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
@@ -46,17 +50,17 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
             tr,A:=IsQuaternionAlgebra(B);
             tr;
             if tr then Discriminant(A); end if;
-          //end if;
+          end if;
         end if;
       end for;
     end while;
   else
     for j in j_list do
       j;
-      if MestreObstructionIsSplit(D,j) then
+      if MestreIsSplit eq false or (MestreIsSplit eq true and MestreObstructionIsSplit(D,j)) then  
         print "j splits Mestre obstruction";
         IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
-       //if IgusaClebsch[4] ne 0 then
+        //if IgusaClebsch[4] ne 0 then
         C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
         print "Hyperelliptic curve has been computed from Igusa-Clebsch invariants";
         printf "Base ring of C is %o", BaseRing(C);
