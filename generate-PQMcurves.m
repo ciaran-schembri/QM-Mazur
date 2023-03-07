@@ -3,7 +3,8 @@
 
 Rx<x>:=PolynomialRing(Rationals());
 //BelyiMap:=-1/27*(x*(x-3)^2/4);
-intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, LinYang:=true, j_list:=[], MestreIsSplit:=false, BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
+
+intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, LinYang:=true, j_list:=[],MestreIsSplit:=false, exponent:=1, BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
   {}
   Rx<x>:=PolynomialRing(Rationals());
   prec := 500;
@@ -27,7 +28,7 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
         if MestreIsSplit eq false or (MestreIsSplit eq true and MestreObstructionIsSplit(D,j)) then  
           IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
           if torsion eq true then
-            tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100);
+            tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100,exponent:=exponent);
             invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
             inv:=Sprint(invr_heur);
             data:=Sprintf("%o||%o",IgusaClebsch, inv); data;
@@ -39,7 +40,11 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=true, torsion:=true, L
 
           if endomorphisms eq true then
             C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
-            X:=ReducedWamelenModel(C);
+            if BaseRing(C) eq Rationals() then 
+              X:=ReducedWamelenModel(C);
+            else 
+              X:=C;
+            end if;
             X;
             XF := ChangeRing(X,F);
             _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
