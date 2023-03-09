@@ -23,7 +23,54 @@ end intrinsic;
 
 
 
+
 intrinsic IntersectAbelianGroups(A::GrpAb,B::GrpAb) -> GrpAb
+  {return the subgroup G of finite abelian groups A and B such that all other subgroups of both are contained in G}
+  sort:=function(m,n);
+  //m,n must be prime powers
+    tr,p,k:=IsPrimePower(m);
+    tr,q,l:=IsPrimePower(n);
+    if p ne q then 
+      return m-n;
+    else 
+      return l-k;
+    end if;
+  end function;
+
+  invariantsA :=PrimaryAbelianInvariants(A);
+  invariantsB :=PrimaryAbelianInvariants(B);
+
+  invariantsA:=Sort(invariantsA,sort);
+  invariantsB:=Sort(invariantsB,sort);
+
+  if #invariantsA - #invariantsB le 0 then 
+    shorter:=invariantsA;
+    longer:=invariantsB;
+  else 
+    shorter:=invariantsB;
+    longer:=invariantsA;
+  end if;
+
+  maximal_sub:=[];
+  for i in [1..#shorter] do 
+    for j in [i..#longer] do 
+      gcd:=GCD(shorter[i],longer[j]);
+      if gcd ne 1 then 
+        Append(~maximal_sub,gcd);
+        break j;
+      end if;
+    end for;
+  end for;
+
+  return AbelianGroup(maximal_sub);
+end intrinsic;
+
+intrinsic IntersectAbelianGroups(A::SeqEnum,B::SeqEnum) -> GrpAb
+  {return the subgroup G of finite abelian groups A and B such that all other subgroups of both are contained in G}
+  return IntersectAbelianGroups(AbelianGroup(A),AbelianGroup(B));
+end intrinsic;
+
+/*intrinsic IntersectAbelianGroups(A::GrpAb,B::GrpAb) -> GrpAb
   {return the subgroup G of finite abelian groups A and B such that all other subgroups of both are contained in G}
   subgroupsA:=[ G`subgroup : G in Subgroups(A) ];
   subgroupsB:=[ G`subgroup : G in Subgroups(B) ];
@@ -44,7 +91,7 @@ intrinsic IntersectAbelianGroups(A::GrpAb,B::GrpAb) -> GrpAb
 
   assert #maximal_intersects eq 1;
   return AbelianGroup(maximal_intersects[1]);
-end intrinsic;
+end intrinsic;*/
 
 
 intrinsic IsSubgroup(A::GrpAb, B::GrpAb) -> BoolElt
@@ -72,7 +119,7 @@ end intrinsic;
 
 
 intrinsic JacobianGroupTwistsFiniteField(Cp::CrvHyp) -> SeqEnum
-  {Given C_p over a finite field F_p, return the point count of the Jacobian of this curve and its twists}
+  {Given C_p over a finite field F_p, return the group of the Jacobian of this curve and its twists}
 
   assert Characteristic(BaseRing(Cp)) gt 0;
   twists:=Twists(Cp);
@@ -97,7 +144,7 @@ end intrinsic;
 
 
 intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGroup([1]), bound:=200, exponent:=1) -> RngIntElt
-  {Given a Igusa-Clebsch invariants which define a curve over Q, check the biggest possible prime power torsion of the Jacobian.
+  {Given Igusa-Clebsch invariants which define a curve over a number field, check the biggest possible torsion of the Jacobian.
   This is done by reducing mod p for p up to a bound and up to twist. }
 
   e:=exponent;
@@ -141,26 +188,28 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
 end intrinsic;
 
 
-intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bound:=200) -> RngIntElt
-  {Given a hyperelliptic curve over a number field, check the biggest possible prime power torsion of the Jacobian.
+intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bound:=1000) -> RngIntElt
+  {Given a hyperelliptic curve C over a number field, check the biggest possible prime power torsion of the Jacobian.
   This is done by reducing mod p for p up to a bound and up to twist.}
 
   assert Type(BaseRing(C)) eq FldNum;
   K:=BaseRing(C);
   OK:=Integers(K);
   group_invs:=PrimaryAbelianInvariants(group);
+  bad_p:=Discriminant(C)*2*OK;
 
-  primes:=[ a : a in PrimesUpTo(bound,K) | GCD(Discriminant(C)*2*OK,a) eq 1*OK ];
+  primes:=[ Factorization(a*OK)[1,1] : a in PrimesUpTo(bound) | GCD(bad_p,a*OK) eq 1*OK and Norm(Factorization(a*OK)[1,1]) eq a ];
   possible_groups:=[];
   Cp:=ChangeRing(C,ResidueClassField(primes[1]));
   all_possible_groups:=JacobianGroupTwistsFiniteField(Cp);
   invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
   all_possible_groups:=[ AbelianGroup(I) : I in invs ];
 
+  Exclude(~primes,primes[1]);
   flag_subgroup:=true;
-  for p in primes do
+  for p in primes do 
     Cp:=ChangeRing(C,ResidueClassField(p));
-    group_twists:=JacobianGroupTwistsFiniteField(Cp);
+    group_twists:=JacobianGroupTwistsFiniteField(Cp); 
     grps:=&cat[ [ IntersectAbelianGroups(A,B) : B in group_twists ] : A in all_possible_groups ];
     invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in grps ]));
     all_possible_groups:=[ AbelianGroup(I) : I in invs ];
@@ -178,7 +227,7 @@ intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bou
   if flag_subgroup eq false then
     return "group not in torsion";
   else
-    return all_possible_groups;
+    return [ PrimaryAbelianInvariants(G) : G in all_possible_groups ];
   end if;
 
 end intrinsic;

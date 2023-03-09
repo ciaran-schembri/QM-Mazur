@@ -39,6 +39,7 @@ while #torsion_jsQ lt size do
 	    Append(~torsion_jsQ,j);
 	    if MestreObstructionIsSplit(D,j) then 
 	      j;   Append(~igusa_clebsch_list,IgusaClebsch);
+
 	    end if;
 	catch e 
 	  ;
@@ -58,7 +59,7 @@ end for;*/
 
 
 for IgusaClebsch in igusa_clebsch_list do 
-  TorsionGroupHeuristicUpToTwist(IgusaClebsch : group:=AbelianGroup([4]), bound:=50, exponent:=2);
+  TorsionGroupHeuristicUpToTwist(IgusaClebsch : group:=AbelianGroup([4]), bound:=500, exponent:=2);
 	//C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
 	//X:=ReducedWamelenModel(C);
   //PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(X)));
@@ -66,34 +67,37 @@ end for;
 
 for IgusaClebsch in igusa_clebsch_list do 
 
-	 C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
-	    if BaseRing(C) eq Rationals() then 
-	      X:=ReducedWamelenModel(C);
-	    else 
-	      X:=C;
-	    end if;
-	    X;
+	C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+ if BaseRing(C) eq Rationals() then 
+    if BaseRing(C) eq Rationals() then 
+      X:=ReducedWamelenModel(C);
+    else 
+      X:=C;
+    end if;
+    X;
 
-	    prec := 1000;
-	    if BaseRing(X) eq Rationals() then 
-	    	F:=RationalsExtra(prec);
-	        XF:=ChangeRing(X,F);
-	    else 
-	        F := BaseNumberFieldExtra(DefiningPolynomial(BaseRing(X)),prec);
-	        tr,map:=IsIsomorphic(BaseRing(C),F);
+    prec := 1000;
+    if BaseRing(X) eq Rationals() then 
+    	F:=RationalsExtra(prec);
+        XF:=ChangeRing(X,F);
+    else 
+        F := BaseNumberFieldExtra(DefiningPolynomial(BaseRing(X)),prec);
+        tr,map:=IsIsomorphic(BaseRing(C),F);
 
-	        f:=HyperellipticPolynomials(X);
-	        coefs:= [map(a) : a in Coefficients(f)];
-	        XF:=HyperellipticCurve(coefs);
-	    end if;
+        f:=HyperellipticPolynomials(X);
+        coefs:= [map(a) : a in Coefficients(f)];
+        XF:=HyperellipticCurve(coefs);
+    end if;
 
-	    K:=HeuristicEndomorphismFieldOfDefinition(XF); K;
-        TorsionGroupHeuristicUpToTwist(ChangeRing(X,K) : bound:=100);
+    K:=HeuristicEndomorphismFieldOfDefinition(XF); K;
+    XK:=ChangeRing(X,K);
+    TorsionGroupHeuristicUpToTwist(XK : bound:=1000);
 
-	    _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
-	    B;
-	    tr,A:=IsQuaternionAlgebra(B);
-	    tr;
-	    if tr then Discriminant(A); end if;
-	end for;
+    _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
+    B;
+    tr,A:=IsQuaternionAlgebra(B);
+    tr;
+    if tr then Discriminant(A); end if;
+  end if;
+end for;
 
