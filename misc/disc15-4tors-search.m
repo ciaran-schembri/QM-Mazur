@@ -9,7 +9,7 @@ Rx<x>:=PolynomialRing(Rationals());
 
 
 phiX2Elkies:=Rx!x*(x-3)^2/4;
-c:=1;
+c:=-1;
 phiX4Elkies:=Rx!Evaluate(phiX2Elkies,c*x^2);
 phiX4LY:=(-1/27)*phiX4Elkies;
 BelyiMap:=phiX4LY;
