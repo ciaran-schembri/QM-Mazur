@@ -9,7 +9,7 @@ Rx<x>:=PolynomialRing(Rationals());
 
 
 phiX2Elkies:=Rx!x*(x-3)^2/4;
-c:=1;
+c:=-1;
 phiX4Elkies:=Rx!Evaluate(phiX2Elkies,c*x^2);
 phiX4LY:=(-1/27)*phiX4Elkies;
 BelyiMap:=phiX4LY;
@@ -19,7 +19,7 @@ LinYang:=true;
 
 
 height_init:=1;
-size:=1000;
+size:=100;
 torsion_jsQ:=[];
 igusa_clebsch_list:=[];
 size:=size;
@@ -30,74 +30,76 @@ while #torsion_jsQ lt size do
   extra_b:=[ a/height : a in [-height..height] | a ne 0 and GCD(height,a) eq 1 ];
   extra := extra_a cat extra_b;
   for q in extra do
-
   	try
-
 	    j:=Evaluate(BelyiMap,q);
-	    IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
-	 
+	    IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);	 
+      //C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+      //[BaseRing(C) eq Rationals(), MestreObstructionIsSplit(D,j)];
 	    Append(~torsion_jsQ,j);
-	    if MestreObstructionIsSplit(D,j) then 
-	      j;   Append(~igusa_clebsch_list,IgusaClebsch);
-
-	    end if;
-	catch e 
-	  ;
-	end try;
-
+	    //if MestreObstructionIsSplit(D,j) then 
+        j;   Append(~igusa_clebsch_list,IgusaClebsch);
+	    //end if;
+	  catch e 
+	    ;
+	  end try;
   end for;
 end while;
 
 
-
+igusa_clebsch_list:=Setseq(Set(igusa_clebsch_list));
 sprint:=[ #Sprint(I) : I in igusa_clebsch_list ];
 ParallelSort(~sprint,~igusa_clebsch_list);
+
 /*for i in [1..#igusa_clebsch_list] do 
   i;
   #Sprint(HyperellipticCurveFromIgusaClebsch(igusa_clebsch_list[i]));
 end for;*/
 
 
-for IgusaClebsch in igusa_clebsch_list do 
-  TorsionGroupHeuristicUpToTwist(IgusaClebsch : group:=AbelianGroup([4]), bound:=500, exponent:=2);
-	//C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
-	//X:=ReducedWamelenModel(C);
-  //PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(X)));
-end for;
+
 
 for IgusaClebsch in igusa_clebsch_list do 
 
-	C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
- if BaseRing(C) eq Rationals() then 
+  C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+  //if BaseRing(C) eq Rationals() then 
     if BaseRing(C) eq Rationals() then 
       X:=ReducedWamelenModel(C);
     else 
       X:=C;
     end if;
-    X;
+    //X;
 
-    prec := 1000;
+    prec := 5000;
     if BaseRing(X) eq Rationals() then 
     	F:=RationalsExtra(prec);
-        XF:=ChangeRing(X,F);
+      XF:=ChangeRing(X,F);
     else 
-        F := BaseNumberFieldExtra(DefiningPolynomial(BaseRing(X)),prec);
-        tr,map:=IsIsomorphic(BaseRing(C),F);
+      F := BaseNumberFieldExtra(DefiningPolynomial(BaseRing(X)),prec);
+      tr,map:=IsIsomorphic(BaseRing(C),F);
 
-        f:=HyperellipticPolynomials(X);
-        coefs:= [map(a) : a in Coefficients(f)];
-        XF:=HyperellipticCurve(coefs);
+      f:=HyperellipticPolynomials(X);
+      coefs:= [map(a) : a in Coefficients(f)];
+      XF:=HyperellipticCurve(coefs);
     end if;
 
-    K:=HeuristicEndomorphismFieldOfDefinition(XF); K;
+    K:=HeuristicEndomorphismFieldOfDefinition(XF); 
+    //K;
     XK:=ChangeRing(X,K);
-    TorsionGroupHeuristicUpToTwist(XK : bound:=1000);
+    TorsionGroupHeuristicUpToTwist(XK : group:=AbelianGroup([4]),bound:=1000);
 
     _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
-    B;
     tr,A:=IsQuaternionAlgebra(B);
     tr;
     if tr then Discriminant(A); end if;
-  end if;
+  //end if;
+  print "========================";
+end for;
+
+
+for IgusaClebsch in igusa_clebsch_list do 
+  TorsionGroupHeuristicUpToTwist(IgusaClebsch : group:=AbelianGroup([4]), bound:=500, exponent:=2);
+  //C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+  //X:=ReducedWamelenModel(C);
+  //PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(X)));
 end for;
 
