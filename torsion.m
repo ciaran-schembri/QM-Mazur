@@ -225,7 +225,7 @@ intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bou
   end for;
 
   if flag_subgroup eq false then
-    return "group not in torsion";
+    return Sprintf("group %o not in torsion", group_invs);
   else
     return [ PrimaryAbelianInvariants(G) : G in all_possible_groups ];
   end if;
