@@ -137,7 +137,8 @@ intrinsic JacobianGroupTwistsFiniteField(IgusaClebschModp::SeqEnum) -> SeqEnum
   assert Characteristic(Universe(IgusaClebschModp)) gt 0;
   Cp:=HyperellipticCurveFromIgusaClebsch(IgusaClebschModp);
   twists:=Twists(Cp);
-  return [ AbelianGroup(Jacobian(X)) : X in twists ];
+  abs:=[ AbelianGroup(Jacobian(X)) : X in twists ];
+  return abs;
 
 end intrinsic;
 
@@ -161,6 +162,7 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
   invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
   all_possible_groups:=[ AbelianGroup(I) : I in invs ];
 
+  Exclude(~primes,primes[1]);
   flag_subgroup:=true;
   for p in primes do
     IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(p^e));
@@ -172,13 +174,17 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
       break p;
     end if;
     if group_invs ne [] then
-      if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
+      for D in all_possible_groups do 
+        if not IsSubgroup(group,D) then 
+          Exclude(~all_possible_groups,D);
+        end if;
+      end for;
+      if all_possible_groups eq [] then 
         flag_subgroup:=false;
         break p;
       end if;
     end if;
   end for;
-
   if flag_subgroup eq false then
     return "group not in torsion";
   else
@@ -217,12 +223,24 @@ intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bou
       break p;
     end if;
     if group_invs ne [] then
-      if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
+      for D in all_possible_groups do 
+        if not IsSubgroup(group,D) then 
+          Exclude(~all_possible_groups,D);
+        end if;
+      end for;
+      if all_possible_groups eq [] then 
         flag_subgroup:=false;
         break p;
       end if;
     end if;
   end for;
+ /*     if true notin [ IsSubgroup(group, )]
+      if group_invs notin Setseq(Set(&cat[ [ PrimaryAbelianInvariants(C`subgroup) : C in Subgroups(AbelianGroup(D)) ] : D in all_possible_groups ])) then
+        flag_subgroup:=false;
+        break p;
+      end if;
+    end if;*/
+
 
   if flag_subgroup eq false then
     return Sprintf("group %o not in torsion", group_invs);
@@ -234,7 +252,7 @@ end intrinsic;
 
 
 
-
+/*
 intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=150, primes:=[], divisibleby:=-1) -> RngIntElt
   {Given Igusa-Clebsch invariants which define a curve over Q, check highest power of q that divides
   the cardinality of the point count of the Jacobian. This is done by reducing mod p
@@ -283,6 +301,8 @@ intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=15
   return tors;
 
 end intrinsic;
+
+
 
 intrinsic NaiveTorsionSearchTwist(X::CrvHyp, primary_invariants::SeqEnum : bound:=10000) -> CrvHyp
   {}

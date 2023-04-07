@@ -5,4 +5,5 @@
   cartan_subgroups.m
   LFT.m
   utils.m
+  enhanced-image.m
 }
