@@ -228,7 +228,7 @@ end function;*/
 end function;*/
 
 
-intrinsic UnitGroup(OmodN::AlgQuatOrdRes) -> GrpPerm, Map
+intrinsic UnitGroup(OmodN::AlgQuatOrdRes) -> GrpMat, Map
   {return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x}
   //Need to make this much more efficient.
 
@@ -266,7 +266,7 @@ end intrinsic;
 
 
 
-intrinsic UnitGroup(O::AlgQuatOrd,N::RngIntElt) -> GrpPerm, Map
+intrinsic UnitGroup(O::AlgQuatOrd,N::RngIntElt) -> GrpMat, Map
   {return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x}
 
   return UnitGroup(quo(O,N));
@@ -439,12 +439,12 @@ intrinsic EnhancedImageGL4(AutmuO::Map, OmodN::AlgQuatOrdRes) -> GrpMat
   assert MapIsHomomorphism(AutmuO : injective:=true);
   H:=Domain(AutmuO);
   ONx,phi:= UnitGroup(OmodN);
-  UnitElements:=Set([ phi(x) : x in Setseq(Set(ONx)) ]);
+  UnitElements:=[ phi(x) : x in ONx ];
   ZmodN:=ResidueClassRing(N);
  
-  auts:=Set([ AutmuO(a) : a in Setseq(Set(Domain(AutmuO))) ]);
+  auts:=[ AutmuO(a) : a in Domain(AutmuO) ];
 
-  enhancedimage:=Setseq(Set(CartesianProduct(auts, UnitElements)));
+  enhancedimage:=CartesianProduct(auts, UnitElements);
 
   semidirGL4xGL4seq:= [ <NormalizingElementToGL4modN(s[1],OmodN : basis:=basis),
      UnitGroupModNToGL4(s[2] : basis:=basis)> : s in enhancedimage ];
@@ -471,7 +471,7 @@ intrinsic EnhancedImageGL4(AutmuO::Map, O::AlgQuatOrd, N::RngIntElt) -> GrpMat
 end intrinsic;
 
 
-intrinsic FixedSubspace(H::GrpMat) -> Any 
+intrinsic FixedSubspace(H::GrpMat) -> GrpAb 
   {}
   N:=#BaseRing(H);
   ZmodN:=ResidueClassRing(N);
@@ -482,6 +482,120 @@ intrinsic FixedSubspace(H::GrpMat) -> Any
   fixedtors:=sub<A | elts >; 
   //fixedsub:=sub< AbelianGroup([N,N,N,N]) | 
   return fixedtors; //PrimaryAbelianInvariants(fixedsub);
+end intrinsic;
+
+
+intrinsic PolarizedElementOfDegree(O::AlgQuatOrd,d::RngIntElt) -> AlgQuatOrdElt 
+  {return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists.}
+  disc:=Discriminant(O);
+  Rx<x>:=PolynomialRing(Rationals());
+  Em<v>:=NumberField(x^2+d*disc);
+  Rm:=Order([1,v]);
+  mu,emb:=Embed(Rm,O);
+  return mu;
+end intrinsic;
+
+
+
+intrinsic IsTwisting(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> BoolElt
+  {Given O, is there j in N_B^x(O) with j^2=b s.t. B = (-disc(O), j^2 | Q)?
+  If so return true}
+
+  tr,nmu:= IsScalar(mu^2);
+  disc:=Discriminant(O);
+  assert tr; assert IsCoercible(Integers(),nmu/disc);
+  B:=QuaternionAlgebra(O);
+  ram:=Divisors(disc) cat [ -1*m : m in Divisors(disc) ];
+
+  for m in ram do
+  Bram<i,chi>:=QuaternionAlgebra< Rationals() | -disc, m>;
+  tr,isom:=IsIsomorphic(Bram, B : Isomorphism:=true);
+    if tr eq true then
+      if mu*isom(chi) eq -isom(chi)*mu and isom(chi) in O then
+        twisted_basis:=[1,mu,isom(chi),mu*isom(chi)];
+        Omuchi:=QuaternionOrder(Integers(), twisted_basis);   
+        assert IsIsomorphic(O,Omuchi);
+        return true, m,twisted_basis;
+      end if;
+    end if;
+  end for;
+  return false;
+end intrinsic;
+
+
+
+intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any
+  {}
+
+  assert IsScalar(mu^2);
+  tr,del:=IsScalar(mu^2);
+  disc:=Discriminant(O);
+  Rx<x>:=PolynomialRing(Rationals());
+  Em<v>:=NumberField(x^2-del);
+  //Rm:=Order([1,v]);
+  //mu,emb:=Embed(Rm,O);
+  B:=QuaternionAlgebra(O);
+  BxmodQx:=QuaternionAlgebraModuloScalars(B);
+
+  assert not(IsCyclotomic(Em));
+  c:= 6;
+  if IsTwisting(O,mu) then
+    tr,m,twisted_basis:=IsTwisting(O,mu);
+
+    if c in [1,3] then
+      return 1;
+    else
+      D2:=Group("C2^2");     
+      D2gens:=Setseq(Generators(D2));
+      assert Order(D2gens[1]) eq 2;
+      elts:= [ <D2gens[1]^l*D2gens[2]^k, twisted_basis[2]^l*twisted_basis[3]^k> : l in [0..1], k in [0..1] ];
+      grp_map:=map< D2 -> BxmodQx | elts >;
+      return grp_map;
+    end if;
+  else
+    return 1;
+  end if;
+end intrinsic;
+
+
+intrinsic FiniteNormalizerGroupGenerators(O::AlgQuatOrd) -> Any
+  {Create the finite subgroup of N_B^x(O)/Q^x}
+  R<x>:=PolynomialRing(Rationals());
+  disc:=Discriminant(O);
+  BO:=QuaternionAlgebra(O);
+  BOmodQx:=QuaternionAlgebraModuloScalars(BO);
+  Qd<v>:=NumberField(x^2+disc);
+  Od:=Order([1,v]);
+  mu,emb:=Embed(Od,O);
+
+  IsCyclotomic(Qd);
+  c,d:=SquarefreeFactorization(disc);
+  zeta_m:=(mu/d);
+  assert Norm(zeta_m) eq c;
+
+  if IsTwisting(O) then
+    tr, bb:=IsTwisting(O);
+    Bb<ib,jb>:=QuaternionAlgebra< Rationals() | -disc, bb>;
+    tr,isom:=IsIsomorphic(Bb, BO : Isomorphism:=true);
+    jj:=isom(jb);
+
+    if c in [1,3] then
+      return [zeta_m + 1,jj];
+    else
+      D6:=DihedralGroup(6);     
+      D6gens:=Setseq(Generators(D6));
+      assert Order(D6gens[1]) eq 2;
+      elts:= [ <D6gens[1]^l*D6gens[2]^k, zeta_m^l*jj^k> : l in [0..1], k in [0..5] ];
+      grp_map:=map< D6 -> BOmodQx | elts >;
+      return grp_map;
+    end if;
+  else
+    if c in [1,3] then
+      return [zeta_m + 1];
+    else
+      return [zeta_m];
+    end if;
+  end if;
 end intrinsic;
 
 

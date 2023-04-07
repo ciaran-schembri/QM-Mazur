@@ -21,8 +21,8 @@ S,IsCoercible,,0,2,0,0,0,0,0,0,0,-1,,0,0,AlgQuatOrdRes,,36,-1,-38,-38,-38,-38
 S,IsCoercible,,0,2,0,0,0,0,0,0,0,-1,,0,0,AlgQuatProj,,36,-1,-38,-38,-38,-38
 S,IsUnit,return whether x in O/N is a unit,0,1,0,0,0,0,0,0,0,AlgQuatOrdResElt,,36,-38,-38,-38,-38,-38
 S,Set,return the set of elements O/N,0,1,0,0,0,0,0,0,0,AlgQuatOrdRes,,-50,-38,-38,-38,-38,-38
-S,UnitGroup,"return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x",0,1,0,0,0,0,0,0,0,AlgQuatOrdRes,,224,175,-38,-38,-38,-38
-S,UnitGroup,"return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x",0,2,0,0,0,0,0,0,0,148,,0,0,19,,224,175,-38,-38,-38,-38
+S,UnitGroup,"return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x",0,1,0,0,0,0,0,0,0,AlgQuatOrdRes,,178,175,-38,-38,-38,-38
+S,UnitGroup,"return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x",0,2,0,0,0,0,0,0,0,148,,0,0,19,,178,175,-38,-38,-38,-38
 S,ElementToAutomorphismModN,a in B^x becomes an automorphism of (O/N)^x by considering the map a |-> (x|-> a^-1xa) as long as a in N_B^x(O). We apply this to (O/N)^x as a permutation group,0,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,18,,33,-38,-38,-38,-38,-38
 S,ElementToAutomorphismModN,a in B^x becomes an automorphism of (O/N)^x by considering the map a |-> (x|-> a^-1xa) as long as a in N_B^x(O). We apply this to (O/N)^x as a permutation group,0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,18,,33,-38,-38,-38,-38,-38
 S,AutomorphismsModN,"Given a subset of Aut(O) input as a finite subset S of B^x, create the map theta : S -> Aut((O/N)^x)",1,0,1,83,0,AlgQuatProjElt,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,83,,175,-38,-38,-38,-38,-38
@@ -37,7 +37,11 @@ S,EnhancedImagePermutation,"AutmuO is a map from a finite group C -> B^x, which 
 S,EnhancedImagePermutation,"AutmuO is a map from a finite group C -> B^x, which is isomorphic onto the image in B^x/Q^x. We create the semidirect product of ONx by AutmuO, using AutomorphismModN as the map theta: AutmuO -> Aut(ONx)",0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,-1,,-27,-38,-38,-38,-38,-38
 S,EnhancedImageGL4,,0,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,175,,178,-38,-38,-38,-38,-38
 S,EnhancedImageGL4,,0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,175,,178,-38,-38,-38,-38,-38
-S,FixedSubspace,,0,1,0,0,0,0,0,0,0,178,,-1,-38,-38,-38,-38,-38
+S,FixedSubspace,,0,1,0,0,0,0,0,0,0,178,,107,-38,-38,-38,-38,-38
+S,PolarizedElementOfDegree,return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists,0,2,0,0,0,0,0,0,0,148,,0,0,19,,20,-38,-38,-38,-38,-38
+S,IsTwisting,"Given O, is there j in N_B^x(O) with j^2=b s.t. B = (-disc(O), j^2 | Q)? If so return true",0,2,0,0,0,0,0,0,0,20,,0,0,19,,36,-38,-38,-38,-38,-38
+S,Aut,,0,2,0,0,0,0,0,0,0,20,,0,0,19,,-1,-38,-38,-38,-38,-38
+S,FiniteNormalizerGroupGenerators,Create the finite subgroup of N_B^x(O)/Q^x,0,1,0,0,0,0,0,0,0,19,,-1,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatOrdResElt,,-38,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatOrdRes,,-38,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatProjElt,,-38,-38,-38,-38,-38,-38
