@@ -13,6 +13,7 @@ S,eq,Decide if OmodN1 equals OmodN2,0,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,AlgQuat
 S,eq,Decide if BxmodFx1 equals BxmodFx2,0,2,0,0,0,0,0,0,0,AlgQuatProj,,0,0,AlgQuatProj,,36,-38,-38,-38,-38,-38
 S,*,compute x*y in OmodN,0,2,0,0,0,0,0,0,0,AlgQuatOrdResElt,,0,0,AlgQuatOrdResElt,,AlgQuatOrdResElt,-38,-38,-38,-38,-38
 S,*,compute x*y in B^x/F^x,0,2,0,0,0,0,0,0,0,AlgQuatProjElt,,0,0,AlgQuatProjElt,,AlgQuatProjElt,-38,-38,-38,-38,-38
+S,^,compute x*y in B^x/F^x,0,2,0,0,0,0,0,0,0,148,,0,0,AlgQuatProjElt,,AlgQuatProjElt,-38,-38,-38,-38,-38
 S,Parent,,0,1,0,0,0,0,0,0,0,AlgQuatOrdResElt,,AlqQuatOrdRes,-38,-38,-38,-38,-38
 S,Parent,,0,1,0,0,0,0,0,0,0,AlgQuatProjElt,,AlqQuatProj,-38,-38,-38,-38,-38
 S,quo,,0,2,0,0,0,0,0,0,0,148,,0,0,19,,AlgQuatOrdRes,-38,-38,-38,-38,-38
@@ -38,10 +39,15 @@ S,EnhancedImagePermutation,"AutmuO is a map from a finite group C -> B^x, which 
 S,EnhancedImageGL4,,0,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,175,,178,-38,-38,-38,-38,-38
 S,EnhancedImageGL4,,0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,175,,178,-38,-38,-38,-38,-38
 S,FixedSubspace,,0,1,0,0,0,0,0,0,0,178,,107,-38,-38,-38,-38,-38
-S,PolarizedElementOfDegree,return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists,0,2,0,0,0,0,0,0,0,148,,0,0,19,,20,-38,-38,-38,-38,-38
-S,IsTwisting,"Given O, is there j in N_B^x(O) with j^2=b s.t. B = (-disc(O), j^2 | Q)? If so return true",0,2,0,0,0,0,0,0,0,20,,0,0,19,,36,-38,-38,-38,-38,-38
+S,HasPolarizedElementOfDegree,return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists,0,2,0,0,0,0,0,0,0,148,,0,0,19,,36,20,-38,-38,-38,-38
+S,DegreeOfPolarizedElement,degree of mu,0,2,0,0,0,0,0,0,0,-1,,0,0,19,,148,-38,-38,-38,-38,-38
+S,IsTwisting,"(O,mu) is twisting (of degree del = -mu^2/disc(O)) if there exists chi in O and N_Bx(O) such that chi^2 = m, m|Disc(O) and mu*chi = -chi*mu",0,2,0,0,0,0,0,0,0,20,,0,0,19,,36,-38,-38,-38,-38,-38
 S,Aut,,0,2,0,0,0,0,0,0,0,20,,0,0,19,,-1,-38,-38,-38,-38,-38
-S,FiniteNormalizerGroupGenerators,Create the finite subgroup of N_B^x(O)/Q^x,0,1,0,0,0,0,0,0,0,19,,-1,-38,-38,-38,-38,-38
+S,AllEnhancedSubgroups,,0,3,0,0,0,0,0,0,0,148,,0,0,20,,0,0,19,,-1,-38,-38,-38,-38,-38
+S,AllEnhancedSubgroups,,0,3,0,0,0,0,0,0,0,148,,0,0,20,,0,0,17,,-1,-38,-38,-38,-38,-38
+S,AllEnhancedSubgroups,,0,3,0,0,0,0,0,0,0,148,,0,0,148,,0,0,19,,-1,-38,-38,-38,-38,-38
+S,AllEnhancedSubgroups,,0,3,0,0,0,0,0,0,0,148,,0,0,148,,0,0,17,,-1,-38,-38,-38,-38,-38
+S,AllEnhancedSubgroups,,0,3,0,0,0,0,0,0,0,148,,0,0,148,,0,0,148,,-1,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatOrdResElt,,-38,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatOrdRes,,-38,-38,-38,-38,-38,-38
 S,Print,,0,1,0,0,1,0,0,0,0,AlgQuatProjElt,,-38,-38,-38,-38,-38,-38

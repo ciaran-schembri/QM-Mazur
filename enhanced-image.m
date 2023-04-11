@@ -110,6 +110,15 @@ intrinsic '*'(x::AlgQuatProjElt,y::AlgQuatProjElt) -> AlgQuatProjElt
 
   return BxmodFx!ElementModuloScalars(BxmodFx,xO*yO);
 end intrinsic;
+
+intrinsic '^'(x::AlgQuatProjElt,y::RngIntElt) -> AlgQuatProjElt 
+  {compute x*y in B^x/F^x}
+  BxmodFx:=Parent(x);
+
+  xO:=x`element;
+
+  return BxmodFx!ElementModuloScalars(BxmodFx,xO^y);
+end intrinsic;
   
 intrinsic Parent(elt::AlgQuatOrdResElt) -> AlqQuatOrdRes
   {.}
@@ -444,9 +453,25 @@ intrinsic EnhancedImageGL4(AutmuO::Map, OmodN::AlgQuatOrdRes) -> GrpMat
  
   auts:=[ AutmuO(a) : a in Domain(AutmuO) ];
 
-  enhancedimage:=CartesianProduct(auts, UnitElements);
+  enhancedimage_cartesian:=[ c: c in CartesianProduct(auts, UnitElements) ];
 
-  semidirGL4xGL4seq:= [ <NormalizingElementToGL4modN(s[1],OmodN : basis:=basis),
+  RF := recformat< n : Integers(),
+  enhanced,
+  GL4xGL4,
+  GL4
+  >
+  ;
+
+  enhancedimage:=[];
+  for elt in enhancedimage_cartesian do 
+    s := rec< RF | >;
+    s`enhanced:=elt;
+    s`GL4xGL4:=<NormalizingElementToGL4modN(elt[1],OmodN : basis:=basis), UnitGroupModNToGL4(elt[2] : basis:=basis)>;
+    s`GL4:=s`GL4xGL4[1]*s`GL4xGL4[2];
+    Append(~enhancedimage,s);
+  end for;
+
+ /* semidirGL4xGL4seq:= [ <NormalizingElementToGL4modN(s[1],OmodN : basis:=basis),
      UnitGroupModNToGL4(s[2] : basis:=basis)> : s in enhancedimage ];
   semidirGL4seq:= [ a[1]*a[2] : a in semidirGL4xGL4seq ];
   semidirGL4:= sub< GL(4,ZmodN) |  semidirGL4seq >;
@@ -456,10 +481,11 @@ intrinsic EnhancedImageGL4(AutmuO::Map, OmodN::AlgQuatOrdRes) -> GrpMat
     s :-> <NormalizingElementToGL4modN(s[1],OmodN : basis:=basis), UnitGroupModNToGL4(s[2] : basis:=basis)>, 
     h :-> enhancedimage[Index(semidirGL4xGL4seq,h)]  >;
   maptogroup:= map< semidirGL4xGL4seq -> semidirGL4 |  a :-> a[1]*a[2], g :-> semidirGL4xGL4seq[Index(semidirGL4seq,g)]  >;
-
   EnhancedImageToGL4 := mapfromenhancedimage*maptogroup;
+  */
+  semidirGL4:= sub< GL(4,ZmodN) |  [ x`GL4 : x in enhancedimage ] >;
 
-  return semidirGL4,EnhancedImageToGL4;
+  return semidirGL4,enhancedimage;
 end intrinsic;
 
 
@@ -485,34 +511,72 @@ intrinsic FixedSubspace(H::GrpMat) -> GrpAb
 end intrinsic;
 
 
-intrinsic PolarizedElementOfDegree(O::AlgQuatOrd,d::RngIntElt) -> AlgQuatOrdElt 
+intrinsic HasPolarizedElementOfDegree(O::AlgQuatOrd,d::RngIntElt) -> BoolElt, AlgQuatOrdElt 
   {return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists.}
   disc:=Discriminant(O);
   Rx<x>:=PolynomialRing(Rationals());
   Em<v>:=NumberField(x^2+d*disc);
-  Rm:=Order([1,v]);
-  mu,emb:=Embed(Rm,O);
-  return mu;
+  if IsSplittingField(Em,QuaternionAlgebra(O)) then 
+    cyc,Czeta,zeta:=IsCyclotomic(Em);
+    if cyc eq true then      
+      Zzeta:=Integers(Czeta);
+      z:=Zzeta.2;
+      zO,emb:=Embed(Zzeta,O);
+      if CyclotomicOrder(Czeta) eq 4 then 
+        assert zO^4 eq 1;
+        tr,c:=IsSquare(Integers()!d*disc);
+        mu:=c*zO;
+        assert mu^2+d*disc eq 0;
+        assert mu in O;
+        return true, O!mu;
+      else 
+        assert zO^3 eq 1;
+        tr,c:=IsSquare(Integers()!d*disc/3);
+        mu:=(2*zO+1)*c;
+        assert mu^2+d*disc eq 0;
+        assert mu in O;
+        return true,O!mu;
+      end if;
+    else 
+      Rm:=Order([1,v]);
+      mu,emb:=Embed(Rm,O);
+      assert mu^2+d*disc eq 0;
+      return true, O!mu;
+    end if;
+  else 
+    return false;
+  end if;
 end intrinsic;
 
 
+intrinsic DegreeOfPolarizedElement(O::AlgQuatOrd,mu:AlgQuatOrdElt) -> RngIntElt
+  {degree of mu}
+  tr,nmu:= IsScalar(mu^2);
+  disc:=Discriminant(O);
+  del:=-nmu/disc;
+  assert IsCoercible(Integers(),del);
+  assert IsSquarefree(Integers()!del);
+  return Integers()!del;
+end intrinsic;
 
 intrinsic IsTwisting(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> BoolElt
-  {Given O, is there j in N_B^x(O) with j^2=b s.t. B = (-disc(O), j^2 | Q)?
-  If so return true}
+  {(O,mu) is twisting (of degree del = -mu^2/disc(O)) if there exists chi in O and N_Bx(O)
+   such that chi^2 = m, m|Disc(O) and mu*chi = -chi*mu }
 
   tr,nmu:= IsScalar(mu^2);
   disc:=Discriminant(O);
-  assert tr; assert IsCoercible(Integers(),nmu/disc);
+  del:=DegreeOfPolarizedElement(O,mu);
   B:=QuaternionAlgebra(O);
   ram:=Divisors(disc) cat [ -1*m : m in Divisors(disc) ];
 
   for m in ram do
-  Bram<i,chi>:=QuaternionAlgebra< Rationals() | -disc, m>;
+  Bram<i1,j1>:=QuaternionAlgebra< Rationals() | -disc*del, m>;
   tr,isom:=IsIsomorphic(Bram, B : Isomorphism:=true);
     if tr eq true then
-      if mu*isom(chi) eq -isom(chi)*mu and isom(chi) in O then
-        twisted_basis:=[1,mu,isom(chi),mu*isom(chi)];
+
+      chi:=isom(j1);
+      if mu*chi eq -chi*mu and chi in O then
+        twisted_basis:=[1,mu,chi,mu*chi];
         Omuchi:=QuaternionOrder(Integers(), twisted_basis);   
         assert IsIsomorphic(O,Omuchi);
         return true, m,twisted_basis;
@@ -528,74 +592,188 @@ intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any
   {}
 
   assert IsScalar(mu^2);
-  tr,del:=IsScalar(mu^2);
+  tr,eta:=IsScalar(mu^2);
   disc:=Discriminant(O);
   Rx<x>:=PolynomialRing(Rationals());
-  Em<v>:=NumberField(x^2-del);
+  Em<v>:=NumberField(x^2-eta);
   //Rm:=Order([1,v]);
-  //mu,emb:=Embed(Rm,O);
+  cyc,Czeta,zeta:=IsCyclotomic(Em);
+  //Zzeta:=Integers(Czeta);
+
   B:=QuaternionAlgebra(O);
   BxmodQx:=QuaternionAlgebraModuloScalars(B);
 
-  assert not(IsCyclotomic(Em));
-  c:= 6;
+  if cyc eq true then  
+    sqeta,c:=SquarefreeFactorization(Integers()!eta);
+    assert sqeta in {-1,-3};
+    if sqeta eq -1 then 
+      cyc_order:=4;
+      zeta_n := mu/c;
+    elif sqeta eq -3 then 
+      cyc_order:=6;
+      zeta_n := ((mu/c)+1)/2;
+    end if;
+    a:=B!zeta_n+1;
+  else 
+    cyc_order:=2;
+    a:=B!mu;
+  end if;
+
   if IsTwisting(O,mu) then
     tr,m,twisted_basis:=IsTwisting(O,mu);
-
-    if c in [1,3] then
-      return 1;
-    else
-      D2:=Group("C2^2");     
-      D2gens:=Setseq(Generators(D2));
-      assert Order(D2gens[1]) eq 2;
-      elts:= [ <D2gens[1]^l*D2gens[2]^k, twisted_basis[2]^l*twisted_basis[3]^k> : l in [0..1], k in [0..1] ];
-      grp_map:=map< D2 -> BxmodQx | elts >;
-      return grp_map;
+    b:=B!(twisted_basis[3]);
+    if cyc eq true then 
+      Dn:=DihedralGroup(cyc_order);
+    else 
+      Dn:=Group("C2^2");
     end if;
-  else
-    return 1;
+    Dngens:=Generators(Dn);
+    assert #Dngens eq 2;
+    assert Order(Dn.1) eq #Dn/2;
+    assert Order(Dn.2) eq 2;
+    elts:= [ <Dn.1^l*Dn.2^k, BxmodQx!(a^l*b^k)> : l in [0..cyc_order-1], k in [0..1] ];
+    grp_map:=map< Dn -> BxmodQx | elts >;
+  else 
+    if cyc eq true then 
+      Cn:=CyclicGroup(cyc_order);
+    else 
+      Cn:=CyclicGroup(2);
+    end if;
+    elts:= [ <Cn.1^k,BxmodQx!(a^k)> : k in [0..#Cn-1] ];
+    grp_map:=map< Cn -> BxmodQx | elts >;
   end if;
+ 
+  return grp_map;
 end intrinsic;
 
 
-intrinsic FiniteNormalizerGroupGenerators(O::AlgQuatOrd) -> Any
-  {Create the finite subgroup of N_B^x(O)/Q^x}
-  R<x>:=PolynomialRing(Rationals());
-  disc:=Discriminant(O);
-  BO:=QuaternionAlgebra(O);
-  BOmodQx:=QuaternionAlgebraModuloScalars(BO);
-  Qd<v>:=NumberField(x^2+disc);
-  Od:=Order([1,v]);
-  mu,emb:=Embed(Od,O);
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,onlypotential:=true,verbose:=true) -> Any
+  {}
+  B:=QuaternionAlgebra(O);
+  BxmodQx:=QuaternionAlgebraModuloScalars(B);
+  OmodN:=quo(O,N);
 
-  IsCyclotomic(Qd);
-  c,d:=SquarefreeFactorization(disc);
-  zeta_m:=(mu/d);
-  assert Norm(zeta_m) eq c;
+  //mu:=PolarizedElementOfDegree(O,1);
+  AutFull:=Aut(O,mu);
+  assert MapIsHomomorphism(AutFull : injective:=true);
 
-  if IsTwisting(O) then
-    tr, bb:=IsTwisting(O);
-    Bb<ib,jb>:=QuaternionAlgebra< Rationals() | -disc, bb>;
-    tr,isom:=IsIsomorphic(Bb, BO : Isomorphism:=true);
-    jj:=isom(jb);
+  RF := recformat< n : Integers(),
+    subgroup,
+    order,
+    index,
+    fixedsubspace,
+    generators,
+    split,
+    endomorphism_representation,
+    atkin_lehners
+    >
+    ;
 
-    if c in [1,3] then
-      return [zeta_m + 1,jj];
-    else
-      D6:=DihedralGroup(6);     
-      D6gens:=Setseq(Generators(D6));
-      assert Order(D6gens[1]) eq 2;
-      elts:= [ <D6gens[1]^l*D6gens[2]^k, zeta_m^l*jj^k> : l in [0..1], k in [0..5] ];
-      grp_map:=map< D6 -> BOmodQx | elts >;
-      return grp_map;
+  G,Gelts:=EnhancedImageGL4(AutFull,O,N);
+  //components:=Components(embed);
+  ZmodN:=ResidueClassRing(N);
+  subs:=Subgroups(G);
+  Autmuimage:=[AutFull(c) : c in Domain(AutFull) ];
+
+  minimal_subs_init:=<>;
+
+  for H in subs do
+    Hgp:=H`subgroup;
+    //Hgpset:= Set(Hgp);
+    fixedspace:=FixedSubspace(Hgp);
+    //if not(exists(e){ N : N in minimal_subs | Hgpset subset N and fixedspace eq }) then
+      //Append(~minimal_subs,Hgpset);
+    gens:=Generators(Hgp);
+    gens_enhanced := [ g`enhanced : g in Gelts | g`GL4 in gens ];
+    enhanced_set:= [ g`enhanced : g in Gelts | g`GL4 in Hgp ];
+
+    for w in Autmuimage do 
+      if <w,OmodN!(O!1)> in enhanced_set then 
+        is_split := true;
+      else 
+        is_split := false;
+      end if;
+    end for;
+
+    order:=H`order;
+    index:=Order(G)/order;
+
+    //endomorphism_image_set:=Set([ h[1] : h in enhanced_set ]);
+    rho_end:=sub< GL(4,ZmodN) | Setseq(Set([ (g`GL4xGL4)[1] : g in Gelts | g`GL4 in Hgp ])) >;
+
+    s := rec< RF | >;
+    s`subgroup:=Hgp;
+    s`order:=order;
+    s`index:=index;
+    s`fixedsubspace:=PrimaryAbelianInvariants(fixedspace);
+    s`generators:=gens;
+    s`split:=is_split;
+    s`endomorphism_representation:=rho_end;
+    s`atkin_lehners:=Sort([ SquarefreeFactorization(Integers()!Norm(x`element)) : x in Set([ (y`enhanced)[1] : y in Gelts | y`GL4 in Hgp  ]) ]);
+
+    if onlypotential then 
+      if #rho_end ne 1 then 
+        Append(~minimal_subs_init,s);
+      end if;
+    else 
+      Append(~minimal_subs_init,s);
     end if;
-  else
-    if c in [1,3] then
-      return [zeta_m + 1];
-    else
-      return [zeta_m];
+  end for;
+
+  if minimal eq false then 
+    return minimal_subs_init;
+  else 
+    minimal_subs:=<>;
+    for s in minimal_subs_init do  
+      F:=s`subgroup;
+      tors:=s`fixedsubspace;
+      endorep:=s`endomorphism_representation;
+      AL:=s`atkin_lehners;
+      if exists(e){ N : N in minimal_subs_init | F subset N`subgroup and 
+        tors eq N`fixedsubspace and F ne N`subgroup 
+         and AL eq N`atkin_lehners } then 
+        ;
+      else 
+        Append(~minimal_subs,s);
+      end if;
+    end for;
+    if verbose eq true then
+      printf "Quaternion order of discriminant %o\n", Discriminant(O);
+      printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
+      for s in minimal_subs do 
+        printf "%o | %o | %o | %o | %o | %o \n",  s`index, s`order, s`split, s`fixedsubspace, GroupName(s`endomorphism_representation), s`atkin_lehners;
+      end for;
     end if;
+    return minimal_subs;
   end if;
+
+end intrinsic;
+
+
+intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+  {}
+  return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+end intrinsic;
+
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+  {}
+  tr,mu:=HasPolarizedElementOfDegree(O,del);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+end intrinsic;
+
+intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+  {}
+  O:=MaximalOrder(B);
+  tr,mu:=HasPolarizedElementOfDegree(O,del);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+end intrinsic;
+
+intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+  {}
+  B:=QuaternionAlgebra(D);
+  O:=MaximalOrder(B);
+  tr,mu:=HasPolarizedElementOfDegree(O,del);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
 end intrinsic;
 
 
@@ -620,33 +798,6 @@ intrinsic Print(BxmodFx::AlgQuatProj)
 {.}
   printf "Quotient by scalars of %o", BxmodFx`quaternionalgebra;
 end intrinsic;
-
-
-/*
-B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
-BxmodQx:=QuaternionAlgebraModuloScalars(B);
-O:=MaximalOrder(B);
-mu := i*(2+j);
-C2:=AbelianGroup([2]);
-AutmuO:=map< C2 -> BxmodQx | [<C2!1,mu>,<C2!0,1>] >;
-N:=4;
-OmodN:=quo(O,N);
-
-G,embed:=EnhancedImageGL4(AutmuO,O,N);
-subs:=Subgroups(G);
-for H in subs do
-  Hgp:=H`subgroup;
-  gens:=Generators(Hgp);
-  gens_enhanced := [ Inverse(embed)(g) : g in gens ];
-  order:=H`order;
-  index:=Order(G)/order;
-  fixedspace:=FixedSubspace(Hgp);
-
-  printf "%o | %o | %o | %o \n", PrimaryAbelianInvariants(fixedspace), order,index,gens_enhanced;
-end for;
-
-
-*/
 
 
 
