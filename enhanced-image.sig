@@ -14,6 +14,7 @@ S,eq,Decide if BxmodFx1 equals BxmodFx2,0,2,0,0,0,0,0,0,0,AlgQuatProj,,0,0,AlgQu
 S,*,compute x*y in OmodN,0,2,0,0,0,0,0,0,0,AlgQuatOrdResElt,,0,0,AlgQuatOrdResElt,,AlgQuatOrdResElt,-38,-38,-38,-38,-38
 S,*,compute x*y in B^x/F^x,0,2,0,0,0,0,0,0,0,AlgQuatProjElt,,0,0,AlgQuatProjElt,,AlgQuatProjElt,-38,-38,-38,-38,-38
 S,^,compute x*y in B^x/F^x,0,2,0,0,0,0,0,0,0,148,,0,0,AlgQuatProjElt,,AlgQuatProjElt,-38,-38,-38,-38,-38
+S,Order,order of element,0,1,0,0,0,0,0,0,0,AlgQuatProjElt,,-1,-38,-38,-38,-38,-38
 S,Parent,,0,1,0,0,0,0,0,0,0,AlgQuatOrdResElt,,AlqQuatOrdRes,-38,-38,-38,-38,-38
 S,Parent,,0,1,0,0,0,0,0,0,0,AlgQuatProjElt,,AlqQuatProj,-38,-38,-38,-38,-38
 S,quo,,0,2,0,0,0,0,0,0,0,148,,0,0,19,,AlgQuatOrdRes,-38,-38,-38,-38,-38

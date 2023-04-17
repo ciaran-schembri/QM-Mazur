@@ -119,6 +119,19 @@ intrinsic '^'(x::AlgQuatProjElt,y::RngIntElt) -> AlgQuatProjElt
 
   return BxmodFx!ElementModuloScalars(BxmodFx,xO^y);
 end intrinsic;
+
+intrinsic Order(x::AlgQuatProjElt) -> Any
+  {order of element}
+  BxmodQx:=x`parent;
+  B:=BxmodQx`quaternionalgebra;
+  for n in [1..24] do 
+    if x^n eq BxmodQx!(B!1) then 
+      return Integers()!n;
+    end if;
+  end for;
+  return "infinity";
+end intrinsic;
+
   
 intrinsic Parent(elt::AlgQuatOrdResElt) -> AlqQuatOrdRes
   {.}
@@ -567,7 +580,8 @@ intrinsic IsTwisting(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> BoolElt
   disc:=Discriminant(O);
   del:=DegreeOfPolarizedElement(O,mu);
   B:=QuaternionAlgebra(O);
-  ram:=Divisors(disc) cat [ -1*m : m in Divisors(disc) ];
+  ram:=[ -1*m : m in Divisors(disc) ];
+  //ram:=//Divisors(disc); //cat [ -1*m : m in Divisors(disc) ];
 
   for m in ram do
   Bram<i1,j1>:=QuaternionAlgebra< Rationals() | -disc*del, m>;
@@ -647,11 +661,12 @@ intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,onlypotential:=true,verbose:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true) -> Any
   {}
   B:=QuaternionAlgebra(O);
   BxmodQx:=QuaternionAlgebraModuloScalars(B);
   OmodN:=quo(O,N);
+  possible_tors:=[ [], [2], [3], [2,3], [2,2], [3,3] , [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
 
   //mu:=PolarizedElementOfDegree(O,1);
   AutFull:=Aut(O,mu);
@@ -711,8 +726,8 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     s`endomorphism_representation:=rho_end;
     s`atkin_lehners:=Sort([ SquarefreeFactorization(Integers()!Norm(x`element)) : x in Set([ (y`enhanced)[1] : y in Gelts | y`GL4 in Hgp  ]) ]);
 
-    if onlypotential then 
-      if #rho_end ne 1 then 
+    if PQMtorsion eq true then 
+      if #rho_end ne 1 and s`fixedsubspace in possible_tors then 
         Append(~minimal_subs_init,s);
       end if;
     else 
