@@ -509,72 +509,28 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
   assert -G!1 in G;
   GO:= G meet sub< GL(4,ResidueClassRing(N)) | UnitGroup(O,N) >;
   assert #G/4 eq #GO;
-  //G,Gelts:=EnhancedImageGL4(AutFull,O,N);
-  //components:=Components(embed);
+
   ZmodN:=ResidueClassRing(N);
   subs:=Subgroups(G);
   Autmuimage:=[AutFull(c) : c in Domain(AutFull) ];
-  //enhanced_setG:= [ g`enhanced : g in Gelts ];
-  //Gelts_plus:=[ a : a in Gelts | Norm((a`enhanced[1])`element)*Norm((a`enhanced[2])`element) gt 0 ];
 
-  //Gplus:= sub<G | [ a`GL4 : a in Gelts_plus ] >;
-  //assert #Gplus eq #Gelts_plus;
-  //subs_plus:=Subgroups(Gplus);
-
-  //elliptic_elts:=EnhancedEllipticElements(O,mu);
-  //elliptic_eltsGL4:=[ EnhancedElementInGL4modN(e,N) : e in elliptic_elts ];
-  //elliptic_eltsGL4:=[ EnhancedElementInGL4modN(g,N) : g in <g2,g4,g6> ];
   elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
 
   minimal_subs_init:=<>;
 
   for H in subs do
 
-    /*
-    for H in subs do                   
     Hgp:=H`subgroup;
-      fixedspace:=PrimaryAbelianInvariants(FixedSubspace(Hgp));
-      piH := EnhancedCosetRepresentation(G,Hgp);
-      sigma := [ piH(v) : v in elliptic_eltsGL4 ];
-       genus:=EnhancedGenus(sigma);
-      printf " %o | %o | %o | %o \n",#G/#Hgp, #Hgp, genus, fixedspace;
-    end for;*/
-    
-    Hgp:=H`subgroup;
-    //Hgpset:= Set(Hgp);
     fixedspace:=FixedSubspace(Hgp);
-    //if not(exists(e){ N : N in minimal_subs | Hgpset subset N and fixedspace eq }) then
-      //Append(~minimal_subs,Hgpset);
-    gens:=Generators(Hgp);
-    //gens_enhanced := [ g`enhanced : g in Gelts | g`GL4 in gens ];
-    //enhanced_set:= [ g`enhanced : g in Gelts | g`GL4 in Hgp ];
 
-    /*for w in Autmuimage do 
-      if <w,OmodN!(O!1)> in enhanced_set then 
-        is_split := true;
-      else 
-        is_split := false;
-      end if;
-    end for;*/
+    gens:=Generators(Hgp);
 
     order:=H`order;
     index:=Order(G)/order;
 
-    //T := CosetTable(G,Hgp);
     piH := EnhancedCosetRepresentation(G,Hgp);
     sigma := [ piH(v) : v in elliptic_eltsGL4 ];
     genus:=EnhancedGenus(sigma);
-
-    //norms:=[ Determinant(a) : a in gens ];
-    /*norms:=[ Norm((a[1]`element)*(a[2]`element)) : a in gens_enhanced ];
-    if Set([ b gt 0 : b in norms]) eq {true} then 
-      norm:="SL";
-    else 
-      norm :="GL";
-    end if;*/
-
-    //endomorphism_image_set:=Set([ h[1] : h in enhanced_set ]);
-    //rho_end:=sub< GL(4,ZmodN) | Setseq(Set([ (g`GL4xGL4)[1] : g in Gelts | g`GL4 in Hgp ])) >;
 
     rho_end_size:=Integers()!#Hgp/(#(GO meet Hgp));
 
@@ -584,11 +540,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     s`order:=order;
     s`index:=index;
     s`fixedsubspace:=PrimaryAbelianInvariants(fixedspace);
-    //s`generators:=gens;
-    //s`split:=is_split;
     s`endomorphism_representation:=rho_end_size;
-    //s`atkin_lehners:=Sort([ SquarefreeFactorization(Integers()!Norm(x`element)) : x in Set([ (y`enhanced)[1] : y in Gelts | y`GL4 in Hgp  ]) ]);
-    //s`norm:=norm;
 
     if PQMtorsion eq true then 
       if s`endomorphism_representation gt 1 and s`fixedsubspace in possible_tors then 

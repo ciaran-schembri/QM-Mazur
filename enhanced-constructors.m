@@ -441,28 +441,6 @@ intrinsic Set(OmodN::AlgQuatOrdRes) -> Set
 end intrinsic;
 
 
-/*function RightRegularRepresentation(U)
-  G := Sym(#U);
-  Useq:=Setseq(U);
-  permrep:=map< U -> G | u :-> G![ Index(Useq,x*u) : x in Useq ] >;
-  perms := [ permrep(u) : u in Useq ];
-  S:=sub< G | perms >;
-  //assert #S eq #U;
-  return S, permrep;
-end function;*/
-/*  [ G | [ Index(Useq,x*u) : x in Useq ] : u in Useq ];
-    H := sub< G | perms[gens] >;
-    if not IsEmpty(K) then
-        K := sub< H | perms[K] >;
-        m := RegularRepresentation(H,K);
-        perms:= perms @ m;
-        H := Codomain(m);
-    end if;
-    assert #H eq #U;
-    return H, map< H -> U | h:-> U[Index(perms, h)], u:-> perms[Index(U,u)] >;
-end function;*/
-
-
 intrinsic UnitGroup(OmodN::AlgQuatOrdRes) -> GrpMat, Map
   {return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x}
   //Need to make this much more efficient.
@@ -481,21 +459,7 @@ intrinsic UnitGroup(OmodN::AlgQuatOrdRes) -> GrpMat, Map
 
   phi:=map< subONx -> Useq | s :-> Useq[Index(unitsinGL4,s)], x :-> UnitGroupToGL4modN(x) >;
 
-  /*G := Sym(#units);
-  permrep:=map< units -> G | u :-> G![ Index(Useq,x*u) : x in Useq ] >;
-  perms := [ permrep(u) : u in Useq ];
 
-  k:=1;
-  S:=sub< G | permrep(Useq[k]) >;
-  while #S lt #units do 
-    k:=k+1;
-    S:=sub<G | permrep([ Useq[l] : l in [1..k]]) >;
-  end while;
-  assert #S eq #units;
-
-  //assert group is UU is correct.
-  phi := map < S -> units | u :-> Useq[Index(perms,u)], x :-> permrep(x) >;
-  //phi_inv := map< units -> S | x :-> permrep(x) >;*/
   return subONx,phi;
 end intrinsic;
 

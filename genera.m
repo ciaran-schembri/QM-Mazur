@@ -97,67 +97,6 @@ end intrinsic;
 
 
 
-/*
-intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum
-  {return the elliptic elements of the enhanced semidirect product}
-  Ocirc:=EnhancedSemidirectProduct(O);
-  Fuchs:=FuchsianGroup(O);
-  FP,m1,m2:=Group(Fuchs);
-  FPgens:=Generators(FP);
-  FPfin:=[ <eval(Prune(Prune(Sprint(LHS(rel))))),eval(Sprint(LHS(rel))[#Sprint(LHS(rel))]) > : rel in Relations(FP) ];
-  Oxfin:=[ <m2(w[1]),w[2]> : w in FPfin ];
-  assert Sort([ w[2] : w in FPfin ]) eq Signature(Fuchs)[2];
-  //[ Order(BxmodQx!(B!(a[1]*chi))) : a in Oxfin ];
-
-  AutFull,autmuOseq:=Aut(O,mu);
-
-  elliptic_elements_init:=[];
-  for x in Oxfin do
-    for w in autmuOseq do 
-      z:=x[1]+1; 
-      if IsSquare(Rationals()!Abs(Norm((w`element)^-1*z))) then
-        w1:=w;
-        tr,c:=IsSquare(Rationals()!Abs(Norm((w`element)^-1*z)));
-        assert (1/c)*((w`element)^-1)*z in O; 
-        ell:=Ocirc!<w,O!((1/c)*((w`element)^-1)*z)>;
-        Append(~elliptic_elements_init,ell);
-      end if;
-    end for;
-  end for;
-
-  elliptic_elements2:=[];
-
-  for ell1,ell2 in elliptic_elements_init do 
-    if ell1 ne ell2 and Type(Order(ell1*ell2)) eq RngIntElt then 
-      Append(~elliptic_elements,ell1*ell2);
-      //Append(~orders,Order(ell)); 
-    end if;
-  end for;
-
-  for a in elliptic_elements2 do
-    if exists(e){ b : b in elliptic_elements_init | a in [b^i : i in [1..Order(b)] ] } then 
-      ;
-    else 
-      //a; Order(a);
-      Append(~elliptic_elements_init,a);
-    end if;
-  end for;
-
-  elliptic_elements:=[];
-  orders:=[];
-  for ell in elliptic_elements_init do 
-    if Order(ell) notin orders then
-      Append(~elliptic_elements,ell);
-      Append(~orders,Order(ell));
-    end if;
-  end for;
-
-  return elliptic_elements;
-
-end intrinsic;
-*/
-
-
 intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum 
   {return the elliptic elements}
   if Discriminant(O) eq 6 then 
