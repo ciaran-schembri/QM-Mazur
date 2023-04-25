@@ -9,7 +9,7 @@ intrinsic Genus(sigma::SeqEnum);
 end intrinsic;
 
 
-B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
+/*B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
 intrinsic OmodN(O::AlgQuatOrd,N::RngIntElt) //matmodq(u::AlgQuatElt);
 
   B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
@@ -34,7 +34,30 @@ intrinsic OmodN(O::AlgQuatOrd,N::RngIntElt) //matmodq(u::AlgQuatElt);
   useq := Eltseq(B!u);
   uK := Eltseq(useq[1]+useq[2]*mati+useq[3]*matj+useq[4]*mati*matj);
   return Omodqx![[modq(uK[1]),modq(uK[2])],[modq(uK[3]),modq(uK[4])]];
-end intrinsic;
+end intrinsic;*/
+
+K<omega> := NumberField(Polynomial([1,1,1]));
+barK := hom<K -> K | Trace(K.1)-K.1>;
+s3 := 1+2*omega;
+S := Integers(K);
+
+p := 2;
+q := 2;
+Smodq, modq := quo<S | q>;
+bar := map<Smodq -> Smodq | x :-> modq(Trace(x@@modq)) - x>;
+Omodqx := sub<GL(2,Smodq) | [[[a,b],[2*bar(b),bar(a)]] : a,b in Smodq | IsUnit(a)]>;
+
+B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
+matmodq := function(u);
+  // returns image in Oqx;
+  M2K := MatrixRing(K,2);
+  mati := M2K![[s3,0],[0,barK(s3)]];
+  matj := M2K![[0,1],[2,0]];
+  useq := Eltseq(B!u);
+  uK := Eltseq(useq[1]+useq[2]*mati+useq[3]*matj+useq[4]*mati*matj);
+  return Omodqx![[modq(uK[1]),modq(uK[2])],[modq(uK[3]),modq(uK[4])]];
+end function;
+
 
 
 mu := i*(2+j); assert mu^2 eq -6;

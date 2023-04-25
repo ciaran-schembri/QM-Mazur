@@ -4,7 +4,7 @@ s3 := 1+2*omega;
 S := Integers(K);
 
 p := 2;
-q := 3;
+q := 2;
 Smodq, modq := quo<S | q>;
 bar := map<Smodq -> Smodq | x :-> modq(Trace(x@@modq)) - x>;
 Omodqx := sub<GL(2,Smodq) | [[[a,b],[2*bar(b),bar(a)]] : a,b in Smodq | IsUnit(a)]>;

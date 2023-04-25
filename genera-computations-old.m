@@ -34,6 +34,7 @@ N:=3;
 
 del:=1;
 tr,mu:=HasPolarizedElementOfDegree(O,del);
+
 rhocirc:=AllEnhancedSubgroups(O,mu,N: minimal:=true, verbose:=true, PQMtorsion:=true);
 
 AutFull,autmuOseq:=Aut(O,mu);
@@ -210,21 +211,32 @@ g;
 
 B<i,j,ij> := QuaternionAlgebra(Rationals(),-3,2);
 O:=MaximalOrder(B);
-mu := i*(2+j); assert mu^2 eq -6;
-muj := mu*j/2;
+mu1 := i*(2+j); assert mu1^2 eq -6;
+muj := mu1*j/2;
 //omegaO := Eltseq(K!S.2)[1] + Eltseq(K!S.2)[2]*(-1+i)/2;
 //O := QuaternionOrder([1,omegaO,j,omegaO*j]);
-delta2 := mu;
+delta2 := mu1;
 delta4 := 1 - i + 1/2*j - 1/2*ij;
 delta6 := Conjugate(delta2*delta4);
 eps := 1+j;
 assert IsScalar(delta2*delta4*delta6) and IsScalar(delta2^2) and IsScalar(delta4^4) and IsScalar(delta6^6);
+ed2:= AtkinLehnerToAutmuO(delta2,mu,O);
+ed4:= AtkinLehnerToAutmuO(delta4,mu,O);
+ed6:= AtkinLehnerToAutmuO(delta6,mu,O);
+ed2*ed4*ed6;
+ed2^2; ed4^2; ed6^2;
+for d1,d2 in [delta2,delta4,delta6] do 
+  <AtkinLehnerToAutmuO(d1*d2,mu,O) eq AtkinLehnerToAutmuO(d1,mu,O)*AtkinLehnerToAutmuO(d2,mu,O),
+   d1,d2, AtkinLehnerToAutmuO(d1*d2,mu,O),AtkinLehnerToAutmuO(d1,mu,O)*AtkinLehnerToAutmuO(d2,mu,O)>;
+end for;
 
-g2 := iotaAutmuO(AutmuO![1,1]);
-g4 := iotaOmodqx(matmodq(delta4/j))*iotaAutmuO(AutmuO![1,0]);
-g6 := iotaOmodqx(matmodq(delta6/(mu*j)))*iotaAutmuO(AutmuO![0,1]);
-eps := iotaOmodqx(matmodq(eps));
-G1 := sub<G | [g2,g4,g6,eps]>;
+[ AtkinLehnerToAutmuO(d1*d2,mu,O) eq AtkinLehnerToAutmuO(d1,mu,O)*AtkinLehnerToAutmuO(d2,mu,O) : d1,d2 in  ];
+
+g2 := AtkinLehnerToAutmuO(delta2,mu,O);
+g4 := AtkinLehnerToAutmuO(delta4,mu,O);
+g6 := AtkinLehnerToAutmuO(delta6,mu,O);
+//eps := iotaOmodqx(matmodq(eps));
+G1 := sub<G | [ EnhancedElementInGL4(g,N) : g in [g2,g4,g6] ]>;
 
 Gamma1, m1 := Group(FuchsianGroup(O));
 
