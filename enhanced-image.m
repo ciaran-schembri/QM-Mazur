@@ -508,13 +508,14 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
   G := sub<GL(4,ResidueClassRing(N)) |  NBOgensGL4 >;
   assert -G!1 in G;
   GO:= G meet sub< GL(4,ResidueClassRing(N)) | UnitGroup(O,N) >;
-  assert #G/4 eq #GO;
+  //assert #G/4 eq #GO; //if twisting
 
   ZmodN:=ResidueClassRing(N);
   subs:=Subgroups(G);
   Autmuimage:=[AutFull(c) : c in Domain(AutFull) ];
 
-  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
+  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in  NBOgens];
+  //[ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
 
   minimal_subs_init:=<>;
 
@@ -593,25 +594,25 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   tr,mu:=HasPolarizedElementOfDegree(O,del);
   return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   O:=MaximalOrder(B);
   tr,mu:=HasPolarizedElementOfDegree(O,del);
   return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
+intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   B:=QuaternionAlgebra(D);
   O:=MaximalOrder(B);

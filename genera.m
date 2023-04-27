@@ -28,7 +28,7 @@ intrinsic EnhancedCosetRepresentation(G::GrpMat,H::GrpMat) -> HomGrp
 end intrinsic;
 
 
-intrinsic AtkinLehnerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
   Ocirc:=EnhancedSemidirectProduct(O);
   AutFull,autmuOseq:=Aut(O,mu);
@@ -48,20 +48,20 @@ intrinsic AtkinLehnerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> Alg
   end for;
 end intrinsic;
 
-intrinsic AtkinLehnerToAutmuO(a::AlgQuatElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  return AtkinLehnerToAutmuO(a,QuaternionAlgebra(O)!mu,O);
+  return NormalizerToAutmuO(a,QuaternionAlgebra(O)!mu,O);
 end intrinsic;
 
 
-intrinsic AtkinLehnerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  return AtkinLehnerToAutmuO(QuaternionAlgebra(O)!a,QuaternionAlgebra(O)!mu,O);
+  return NormalizerToAutmuO(QuaternionAlgebra(O)!a,QuaternionAlgebra(O)!mu,O);
 end intrinsic;
 
-intrinsic AtkinLehnerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  return AtkinLehnerToAutmuO(QuaternionAlgebra(O)!a,mu,O);
+  return NormalizerToAutmuO(QuaternionAlgebra(O)!a,mu,O);
 end intrinsic;
 
 
@@ -77,7 +77,40 @@ intrinsic NormalizerPlusGenerators(O::AlgQuatOrd) -> SeqEnum
     Oelliptic_elts:=[ O!map(a) : a in B6elliptic_elts ];
     assert Set([ Norm(a) : a in Oelliptic_elts ]) eq {2,6,12};
     return Oelliptic_elts;
-  else 
+  elif Discriminant(O) eq 10 then 
+    //Elkies 
+    B10<b,e>:=QuaternionAlgebra<Rationals() | -2,5 >;
+    s2:=b;
+    s2p:=2*e+5*b-b*e;
+    s2pp:=5*b-b*e;
+    s3:=2*b-e-1;
+
+    B:=QuaternionAlgebra(O);
+    tr,map:=IsIsomorphic(B10,B : Isomorphism:=true);
+    assert tr;
+    B10elliptic_elts:=[ s2,s2p,s2pp,s3];
+    Oelliptic_elts:=[ O!map(a) : a in B10elliptic_elts ];
+    //assert Set([ Norm(a) : a in Oelliptic_elts ]) eq {2,6,12};
+    return Oelliptic_elts;
+  elif Discriminant(O) eq 15 then 
+    B15<c,e>:=QuaternionAlgebra<Rationals() | -3,5 >;
+    s2:=4*c-3*e;
+    s2p:=5*c-3*e-c*e;
+    s2pp:=20*c-9*e-7*c*e;
+    s6:=3+c;
+
+    B:=QuaternionAlgebra(O);
+    tr,map:=IsIsomorphic(B15,B : Isomorphism:=true);
+    assert tr;
+    B15elliptic_elts:=[ s2,s2p,s2pp,s6];
+    assert IsScalar(&*B15elliptic_elts);
+    assert IsScalar(s2^2); assert IsScalar(s2p^2); assert IsScalar(s2pp^2); assert IsScalar(s6^6);
+
+    Oelliptic_elts:=[ O!map(a) : a in B15elliptic_elts ];
+    //assert Set([ Norm(a) : a in Oelliptic_elts ]) eq {2,6,12};
+    return Oelliptic_elts;
+
+  else
     return "oops, not written for this discriminant yet";
   end if;
 end intrinsic;
@@ -85,12 +118,13 @@ end intrinsic;
 
 intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatElt) -> Tup 
   {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
-  return < AtkinLehnerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
+  return < NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
 end intrinsic;
 
 intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Tup 
   {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
-  return < AtkinLehnerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
+  B:=QuaternionAlgebra(O);
+  return < NormalizerToAutmuO(a,B!mu,O) : a in NormalizerPlusGenerators(O) >;
 end intrinsic;
 
 
@@ -99,11 +133,7 @@ end intrinsic;
 
 intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum 
   {return the elliptic elements}
-  if Discriminant(O) eq 6 then 
-  return < AtkinLehnerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
-  else 
-    return "oops, not written for this discriminant yet";
-  end if;
+  return < NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
 end intrinsic;
 
 intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> SeqEnum

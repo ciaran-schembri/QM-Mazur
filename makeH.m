@@ -131,6 +131,7 @@ end for;
 
 Uq, mq := UnitGroup(Integers(q));
 
+print "#H | Index | #H meet O/N | Deg(L) | Genus | Torsion \n";
 for Hrec in Subgroups(G) do
   // still have to think about a conjugate under Aut_mu(O)
   H := Hrec`subgroup;
