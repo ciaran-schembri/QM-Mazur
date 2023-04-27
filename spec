@@ -7,5 +7,5 @@
   utils.m
   enhanced-image.m
   enhanced-constructors.m
-  genera-computations.m
+  genera.m
 }
