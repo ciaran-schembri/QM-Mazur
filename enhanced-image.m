@@ -1,286 +1,4 @@
 
-declare type AlgQuatOrdRes[AlgQuatOrdResElt];
-
-declare attributes AlgQuatOrdRes :
-  quaternionorder,
-  quaternionideal;
-
-declare attributes AlgQuatOrdResElt:
-  element,
-  parent;
-
-declare type AlgQuatProj[AlgQuatProjElt];
-
-declare attributes AlgQuatProj :
-  quaternionalgebra;
-
-declare attributes AlgQuatProjElt :
-  element,
-  parent;
-
-intrinsic OmodNElement(OmodN::AlgQuatOrdRes, x::AlgQuatOrdElt) -> AlgQuatOrdResElt
-  {Construct an element of the OmodN whose underlying element is x in O}
-  elt := New(AlgQuatOrdResElt);
-  elt`element := x;
-  elt`parent := OmodN;
-  
-  return OmodN!elt;
-end intrinsic;
-
-intrinsic ElementModuloScalars(BxmodFx::AlgQuatProj, x::AlgQuatElt) -> AlgQuatProjElt
-  {Construct an element of B^x/F^x whose underlying element is x in B}
-  elt := New(AlgQuatProjElt);
-  elt`element := x;
-  elt`parent := BxmodFx;
-  
-  return elt;
-end intrinsic;
-
-intrinsic 'eq'(x::AlgQuatOrdResElt,y::AlgQuatOrdResElt) -> BoolElt 
-  {Decide if x equals y in OmodN}
-  assert Parent(x) eq Parent(y);
-  OmodN:=Parent(x);
-  N:=OmodN`quaternionideal;
-  O:=OmodN`quaternionorder;
-  xO:=x`element;
-  yO:=y`element;
-  return xO-yO in N*O;
-end intrinsic;
-
-intrinsic 'eq'(x::AlgQuatProjElt,y::AlgQuatProjElt) -> BoolElt 
-  {Decide if x equals y in OmodN}
-  assert Parent(x) eq Parent(y);
-  //BxmodFx:=Parent(x);
-  x0:=x`element;
-  y0:=y`element;
-  assert x0*y0 ne 0;
-  return IsScalar(x0/y0);
-end intrinsic;
-
-intrinsic 'eq'(OmodN1::AlgQuatOrdRes,OmodN2::AlgQuatOrdRes) -> BoolElt 
-  {Decide if OmodN1 equals OmodN2}
- 
-  O1:=OmodN1`quaternionorder;
-  O2:=OmodN2`quaternionorder;
-
-  N1:=OmodN1`quaternionideal;
-  N2:=OmodN2`quaternionideal;
-
-  if O1 eq O2 and N1 eq N2 then 
-    return true;
-  else 
-    return false;
-  end if;
-end intrinsic;
-
-
-intrinsic 'eq'(BxmodFx1::AlgQuatProj,BxmodFx2::AlgQuatProj) -> BoolElt 
-  {Decide if BxmodFx1 equals BxmodFx2}
- 
-  B1:=BxmodFx1`quaternionalgebra;
-  B2:=BxmodFx2`quaternionalgebra;
-
-  if B1 eq B2 then 
-    return true;
-  else 
-    return false;
-  end if;
-end intrinsic;
-
-intrinsic '*'(x::AlgQuatOrdResElt,y::AlgQuatOrdResElt) -> AlgQuatOrdResElt 
-  {compute x*y in OmodN}
-  assert Parent(x) eq Parent(y);
-  OmodN:=Parent(x);
-  N:=OmodN`quaternionideal;
-  O:=OmodN`quaternionorder;
-  xO:=x`element;
-  yO:=y`element;
-
-  ON,piN:=quo(O,N);
-  return OmodN!(piN(xO*yO));
-end intrinsic;
-
-intrinsic '*'(x::AlgQuatProjElt,y::AlgQuatProjElt) -> AlgQuatProjElt 
-  {compute x*y in B^x/F^x}
-  assert Parent(x) eq Parent(y);
-  BxmodFx:=Parent(x);
-
-  xO:=x`element;
-  yO:=y`element;
-
-  return BxmodFx!ElementModuloScalars(BxmodFx,xO*yO);
-end intrinsic;
-
-intrinsic '^'(x::AlgQuatProjElt,y::RngIntElt) -> AlgQuatProjElt 
-  {compute x*y in B^x/F^x}
-  BxmodFx:=Parent(x);
-
-  xO:=x`element;
-
-  return BxmodFx!ElementModuloScalars(BxmodFx,xO^y);
-end intrinsic;
-  
-intrinsic Parent(elt::AlgQuatOrdResElt) -> AlqQuatOrdRes
-  {.}
-  return elt`parent;    
-end intrinsic;
-
-intrinsic Parent(elt::AlgQuatProjElt) -> AlqQuatProj
-  {.}
-  return elt`parent;    
-end intrinsic;
-
-intrinsic quo(O::AlgQuatOrd, N::RngIntElt) -> AlgQuatOrdRes
-  {.}
-  M := New(AlgQuatOrdRes);
-  M`quaternionideal := N;
-  M`quaternionorder := O;
-  projection := map < O -> M | x :-> OmodNElement(M,x) >;
-  return M, projection;
-end intrinsic;
-
-intrinsic QuaternionAlgebraModuloScalars(B::AlgQuat) -> AlgQuatProj 
-  {Create B^x/F^x}
-  BxmodFx:=New(AlgQuatProj);
-  BxmodFx`quaternionalgebra := B;
-  return BxmodFx;
-end intrinsic;
-
-intrinsic IsCoercible(OmodN::AlgQuatOrdRes, x::Any) -> BoolElt, .
-{.}
-  if Type(x) eq AlgQuatOrdResElt then
-    if Parent(x) eq OmodN then
-      return true, x;
-    else
-      return false, "Illegal Coercion";
-    end if;
-  elif Type(x) eq AlgQuatOrdElt then
-    if Parent(x) eq OmodN`quaternionorder then 
-      return true,OmodNElement(OmodN,x);
-    else 
-      return false, "Illegal Coercion";
-    end if;
-  else
-    return false, "Illegal Coercion";
-  end if;
-end intrinsic;
-
-
-intrinsic IsCoercible(BxmodFx::AlgQuatProj, x::Any) -> BoolElt, .
-{.}
- if Type(x) eq AlgQuatProjElt then
-    if Parent(x) eq BxmodFx then
-      return true, x;
-    else
-      return false, "Illegal Coercion";
-    end if;
-  elif Type(x) eq AlgQuatElt then 
-    if Parent(x) eq BxmodFx`quaternionalgebra then 
-      return true, ElementModuloScalars(BxmodFx,x);
-    else   
-      return false, "Illegal Coercion";   
-    end if;
-  else
-    return false, "Illegal Coercion";
-  end if;
-
-end intrinsic;
-
-
-
-intrinsic IsUnit(x::AlgQuatOrdResElt) -> BoolElt
-  {return whether x \in O/N is a unit}
-  x0:=x`element;
-  OmodN:=Parent(x);
-  N:=OmodN`quaternionideal;
-  nm:=Norm(x0);
-  ZmodN:=ResidueClassRing(N);
-
-  if IsUnit(ZmodN!nm) then 
-    return true;
-  else 
-    return false;
-  end if;
-end intrinsic;
-
-intrinsic Set(OmodN::AlgQuatOrdRes) -> Set 
-  {return the set of elements O/N}
-
-  O:=OmodN`quaternionorder;
-  N:=OmodN`quaternionideal;
-  ON,piN:=quo(O,N);
-  basis:=Basis(O);
-  set:={  O!(a*basis[1] + b*basis[2] + c*basis[3] + d*basis[4]) : a,b,c,d in [0..N-1]  };
-  return { OmodN!piN(x) : x in set };
-end intrinsic;
-
-
-/*function RightRegularRepresentation(U)
-  G := Sym(#U);
-  Useq:=Setseq(U);
-  permrep:=map< U -> G | u :-> G![ Index(Useq,x*u) : x in Useq ] >;
-  perms := [ permrep(u) : u in Useq ];
-  S:=sub< G | perms >;
-  //assert #S eq #U;
-  return S, permrep;
-end function;*/
-/*  [ G | [ Index(Useq,x*u) : x in Useq ] : u in Useq ];
-    H := sub< G | perms[gens] >;
-    if not IsEmpty(K) then
-        K := sub< H | perms[K] >;
-        m := RegularRepresentation(H,K);
-        perms:= perms @ m;
-        H := Codomain(m);
-    end if;
-    assert #H eq #U;
-    return H, map< H -> U | h:-> U[Index(perms, h)], u:-> perms[Index(U,u)] >;
-end function;*/
-
-
-intrinsic UnitGroup(OmodN::AlgQuatOrdRes) -> GrpMat, Map
-  {return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x}
-  //Need to make this much more efficient.
-
-  O:=OmodN`quaternionorder;
-  N:=OmodN`quaternionideal;
-  units := { x : x in Set(OmodN) | IsUnit(x) };
-  Useq:=Setseq(units);
-
-  unitsinGL4:= [ UnitGroupModNToGL4(x) : x in Useq ];
-
-  ZmodN:=ResidueClassRing(N);
-
-  subONx:=sub< GL(4,ZmodN) | unitsinGL4 >;
-  assert #Set(subONx) eq #units;
-
-  phi:=map< subONx -> Useq | s :-> Useq[Index(unitsinGL4,s)], x :-> UnitGroupModNToGL4(x) >;
-
-  /*G := Sym(#units);
-  permrep:=map< units -> G | u :-> G![ Index(Useq,x*u) : x in Useq ] >;
-  perms := [ permrep(u) : u in Useq ];
-
-  k:=1;
-  S:=sub< G | permrep(Useq[k]) >;
-  while #S lt #units do 
-    k:=k+1;
-    S:=sub<G | permrep([ Useq[l] : l in [1..k]]) >;
-  end while;
-  assert #S eq #units;
-
-  //assert group is UU is correct.
-  phi := map < S -> units | u :-> Useq[Index(perms,u)], x :-> permrep(x) >;
-  //phi_inv := map< units -> S | x :-> permrep(x) >;*/
-  return subONx,phi;
-end intrinsic;
-
-
-
-intrinsic UnitGroup(O::AlgQuatOrd,N::RngIntElt) -> GrpMat, Map
-  {return (O/N)^x as a permutation group G, the second value is the isomorphism G ->(O/N)^x}
-
-  return UnitGroup(quo(O,N));
-end intrinsic;
-
 
 
 intrinsic ElementToAutomorphismModN(a::AlgQuatElt, OmodN::AlgQuatOrdRes) -> GrpAutoElt
@@ -338,34 +56,35 @@ end intrinsic
 
 
 
-intrinsic NormalizingElementToGL4modN(x::AlgQuatElt,OmodN::AlgQuatOrdRes : basis:=[]) -> GrpMatElt 
+intrinsic NormalizingElementToGL4(x::AlgQuatElt,O::AlgQuatOrd: basis:=[]) -> GrpMatElt 
   {O is an order over R. For an element g \in N_Bx(O) the map phi_g : b |--> g^-1bg
   is R-linear hence [g] is an element of M_4(R) after fixing a basis
   this function computes [g] and also returns the R-basis of O.}
 
-    O:=OmodN`quaternionorder;
-    N:=OmodN`quaternionideal;
+    //O:=OmodN`quaternionorder;
+    //N:=OmodN`quaternionideal;
+    //O:=MaximalOrder(Parent(x));
     if basis eq [] then 
       basis:=Basis(O);
     end if;
     R:=BaseRing(O);
     assert R eq Integers();
     M4R:=MatrixAlgebra(R,4);
-    ZmodN:=ResidueClassRing(N);
+    //ZmodN:=ResidueClassRing(N);
 
     x_map:=Transpose(M4R![ Eltseq(O!(x^(-1)*b*x)) : b in basis ]);
     assert Determinant(x_map) eq 1;
 
-    return GL(4,ZmodN)!x_map, basis;
+    return GL(4,R)!x_map, basis;
 end intrinsic;
 
 
-intrinsic NormalizingElementToGL4modN(x::AlgQuatProjElt,OmodN::AlgQuatOrdRes : basis:=[]) -> GrpMatElt 
+intrinsic NormalizingElementToGL4(x::AlgQuatProjElt,O::AlgQuatOrd : basis:=[]) -> GrpMatElt 
   {O is an order over R. For an element g \in N_Bx(O) the map phi_g : b |--> g^-1bg
   is R-linear hence [g] is an element of M_4(R) after fixing a basis
   this function computes [g] and also returns the R-basis of O.}
 
-  return NormalizingElementToGL4modN(x`element, OmodN : basis:=basis );
+  return NormalizingElementToGL4(x`element, O : basis:=basis );
 end intrinsic;
 
 
@@ -374,44 +93,119 @@ intrinsic NormalizingElementToGL4modN(x::AlgQuatElt,O::AlgQuatOrd, N::RngIntElt 
   is R-linear hence [g] is an element of M_4(R) after fixing a basis
   this function computes [g] and also returns the R-basis of O.}
 
-  OmodN:=quo(O,N);
-  return NormalizingElementToGL4modN(x,OmodN : basis:=basis);
+  ZmodN:=ResidueClassRing(N);
+  return GL(4,ZmodN)!NormalizingElementToGL4(x,O : basis:=basis);
 end intrinsic;
-  
 
 intrinsic NormalizingElementToGL4modN(x::AlgQuatProjElt,O::AlgQuatOrd, N::RngIntElt : basis:=[]) -> GrpMatElt 
   {O is an order over R. For an element g \in N_Bx(O) the map phi_g : b |--> g^-1bg
   is R-linear hence [g] is an element of M_4(R) after fixing a basis
   this function computes [g] and also returns the R-basis of O.}
 
-  OmodN:=quo(O,N);
-  return NormalizingElementToGL4modN(x,OmodN : basis:=basis);
+  ZmodN:=ResidueClassRing(N);
+  return GL(4,ZmodN)!NormalizingElementToGL4(x`element,O : basis:=basis);
 end intrinsic;
+  
 
 
-intrinsic UnitGroupModNToGL4(x::AlgQuatOrdResElt : basis:=[]) -> GrpMatElt 
+
+intrinsic UnitGroupToGL4(x::AlgQuatOrdElt : basis:=[]) -> GrpMatElt 
   {O is an order over R, this returns a matrix [lambda_g] wrt to a basis
   which is the right regular representation
-  lambda_g : g --> b*g where g \in GL_1(O)}
+  lambda_x : y --> y*x where g \in GL_1(O)}
 
-  OmodN:=Parent(x);
-  x0:=x`element;
-  O:=OmodN`quaternionorder;
-  N:=OmodN`quaternionideal;
+  //OmodN:=Parent(x);
+  //x0:=x`element;
+  //O:=OmodN`quaternionorder;
+  //N:=OmodN`quaternionideal;
+  O:=Parent(x);
   if basis eq [] then 
     basis:=Basis(O);
   end if;
   R:=BaseRing(O);
   assert R eq Integers();
   M4R:=MatrixAlgebra(R,4);
-  ZmodN:=ResidueClassRing(N);
+  //ZmodN:=ResidueClassRing(N);
 
-
-  x_map:=Transpose(M4R![ Eltseq(O!(b*x0)) : b in basis ]);
-  assert ZmodN!Determinant(x_map) ne 0;
-  return GL(4,ZmodN)!x_map;
+  x_map:=Transpose(M4R![ Eltseq(O!(b*x)) : b in basis ]);
+  //assert ZmodN!Determinant(x_map) ne 0;
+  return M4R!x_map;
 end intrinsic;
  
+
+
+intrinsic UnitGroupToGL4modN(x::AlgQuatOrdElt,N::RngIntElt : basis:=[]) -> GrpMatElt 
+  {O is an order over R, this returns a matrix [lambda_g] wrt to a basis
+  which is the right regular representation
+  lambda_g : g --> b*g where g \in GL_1(O)}
+
+  ZmodN:=ResidueClassRing(N);
+  return GL(4,ZmodN)!UnitGroupToGL4(x);
+end intrinsic;
+
+
+intrinsic EnhancedSemidirectInGL4(Ocirc::AlgQuatEnh : basis:=[]) -> Map 
+  {create the map from the semidirect product to GL4}
+
+  O:=Ocirc`quaternionorder;
+  R:=Ocirc`basering;
+  if basis eq [] then 
+    basis:=Basis(O);
+  end if;
+  GL4:=GL(4,R);
+  if R eq Integers() then 
+    mapfromenhancedimage := map<  Ocirc -> GL4  |  
+    s :-> NormalizingElementToGL4((s`element)[1],O : basis:=basis)*UnitGroupToGL4((s`element)[2] : basis:=basis)  >;
+  else 
+    N:=Modulus(R);
+    mapfromenhancedimage := map<  Ocirc -> GL4  |  
+    s :-> NormalizingElementToGL4modN(s[1],O,N : basis:=basis)*UnitGroupToGL4modN(s[2],N : basis:=basis)  >;
+  end if;
+
+  return mapfromenhancedimage;
+end intrinsic;
+ 
+
+intrinsic EnhancedSemidirectInGL4modN(Ocirc::AlgQuatEnh,N::RngIntElt : basis:=[]) -> Map 
+  {create the map from the semidirect product to GL4}
+
+  O:=Ocirc`quaternionorder;
+  R:=Ocirc`basering;
+  if basis eq [] then 
+    basis:=Basis(O);
+  end if;
+  GL4:=GL(4,R);
+  assert R eq Integers();
+
+  ZmodN:=ResidueClassRing(N);
+  GL4:=GL(4,ZmodN);
+  mapfromenhancedimage := map<  Ocirc -> GL4  |  
+    s :-> GL4!(NormalizingElementToGL4((s`element)[1],O : basis:=basis)*UnitGroupToGL4((s`element)[2] : basis:=basis))  >;
+  
+  return mapfromenhancedimage;
+end intrinsic;
+
+
+
+intrinsic EnhancedElementInGL4(g::AlgQuatEnhElt : basis:=[]) -> GrpMatElt
+  {the enhanced element in GL4}
+
+  Ocirc:=Parent(g);
+  map:=EnhancedSemidirectInGL4(Ocirc : basis:=basis);
+  return map(g);
+end intrinsic;
+
+intrinsic EnhancedElementInGL4modN(g::AlgQuatEnhElt,N::RngIntElt : basis:=[]) -> GrpMatElt
+  {the enhanced element in GL4}
+
+  Ocirc:=Parent(g);
+  map:=EnhancedSemidirectInGL4modN(Ocirc,N : basis:=basis);
+  return map(g);
+end intrinsic;
+
+
+
+  
 
 
 intrinsic EnhancedImagePermutation(AutmuO::Map,OmodN::AlgQuatOrdRes) -> Grp 
@@ -436,6 +230,33 @@ intrinsic EnhancedImagePermutation(AutmuO::.,O::AlgQuatOrd, N::RngIntElt) -> Grp
 
   OmodN:=quo(O,N);
   return EnhancedImagePermutation(AutmuO,OmodN);
+end intrinsic;
+
+
+intrinsic EnhancedElementRecord(elt::. : basis:=[]) -> Any
+  {given <w,x> in Autmu(O) \rtimes (O/N) return <w,x> as a 
+  record along with its embedding in GL_4xGL_4 and just GL_4}
+  
+  OmodN:=Parent(elt[2]);
+  O:=OmodN`quaternionorder;
+  N:=OmodN`quaternionideal;
+
+  if basis ne [] then 
+    basis:=Basis(O);
+  end if;
+
+  RF := recformat< n : Integers(),
+  enhanced,
+  GL4xGL4,
+  GL4
+  >
+  ;  
+
+  s := rec< RF | >;
+  s`enhanced:=elt;
+  s`GL4xGL4:=<NormalizingElementToGL4modN(elt[1]`element,O,N : basis:=basis), UnitGroupToGL4modN(elt[2]`element,N : basis:=basis)>;
+  s`GL4:=s`GL4xGL4[1]*s`GL4xGL4[2];
+  return s;
 end intrinsic;
 
 
@@ -466,7 +287,7 @@ intrinsic EnhancedImageGL4(AutmuO::Map, OmodN::AlgQuatOrdRes) -> GrpMat
   for elt in enhancedimage_cartesian do 
     s := rec< RF | >;
     s`enhanced:=elt;
-    s`GL4xGL4:=<NormalizingElementToGL4modN(elt[1],OmodN : basis:=basis), UnitGroupModNToGL4(elt[2] : basis:=basis)>;
+    s`GL4xGL4:=<NormalizingElementToGL4modN(elt[1],O,N: basis:=basis), UnitGroupToGL4modN(elt[2]`element,N : basis:=basis)>;
     s`GL4:=s`GL4xGL4[1]*s`GL4xGL4[2];
     Append(~enhancedimage,s);
   end for;
@@ -567,7 +388,8 @@ intrinsic IsTwisting(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> BoolElt
   disc:=Discriminant(O);
   del:=DegreeOfPolarizedElement(O,mu);
   B:=QuaternionAlgebra(O);
-  ram:=Divisors(disc) cat [ -1*m : m in Divisors(disc) ];
+  ram:=Divisors(disc);
+  //ram:=//Divisors(disc); //cat [ -1*m : m in Divisors(disc) ];
 
   for m in ram do
   Bram<i1,j1>:=QuaternionAlgebra< Rationals() | -disc*del, m>;
@@ -642,16 +464,26 @@ intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any
     elts:= [ <Cn.1^k,BxmodQx!(a^k)> : k in [0..#Cn-1] ];
     grp_map:=map< Cn -> BxmodQx | elts >;
   end if;
- 
-  return grp_map;
+  
+  assert MapIsHomomorphism(grp_map);
+  return grp_map, [ grp_map(a) : a in Domain(grp_map) ];
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,onlypotential:=true,verbose:=true) -> Any
+intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatElt) -> Any
   {}
+  return Aut(O,O!mu);
+end intrinsic;
+
+
+
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true) -> Any
+  {return all of the enhanced subgroups in a list with each one being a record}
+  assert N gt 2;
   B:=QuaternionAlgebra(O);
   BxmodQx:=QuaternionAlgebraModuloScalars(B);
   OmodN:=quo(O,N);
+  possible_tors:=[ [], [2], [3], [2,3], [2,2], [3,3] , [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
 
   //mu:=PolarizedElementOfDegree(O,1);
   AutFull:=Aut(O,mu);
@@ -659,60 +491,59 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 
   RF := recformat< n : Integers(),
     subgroup,
+    genus,
     order,
     index,
     fixedsubspace,
     generators,
     split,
     endomorphism_representation,
-    atkin_lehners
+    atkin_lehners,
+    norm
     >
     ;
 
-  G,Gelts:=EnhancedImageGL4(AutFull,O,N);
-  //components:=Components(embed);
+  NBOgens:=NormalizerPlusGeneratorsEnhanced(O,mu);
+  NBOgensGL4:=[ EnhancedElementInGL4modN(g,N) : g in NBOgens ]; 
+  G := sub<GL(4,ResidueClassRing(N)) |  NBOgensGL4 >;
+  assert -G!1 in G;
+  GO:= G meet sub< GL(4,ResidueClassRing(N)) | UnitGroup(O,N) >;
+  assert #G/4 eq #GO;
+
   ZmodN:=ResidueClassRing(N);
   subs:=Subgroups(G);
   Autmuimage:=[AutFull(c) : c in Domain(AutFull) ];
 
+  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
+
   minimal_subs_init:=<>;
 
   for H in subs do
-    Hgp:=H`subgroup;
-    //Hgpset:= Set(Hgp);
-    fixedspace:=FixedSubspace(Hgp);
-    //if not(exists(e){ N : N in minimal_subs | Hgpset subset N and fixedspace eq }) then
-      //Append(~minimal_subs,Hgpset);
-    gens:=Generators(Hgp);
-    gens_enhanced := [ g`enhanced : g in Gelts | g`GL4 in gens ];
-    enhanced_set:= [ g`enhanced : g in Gelts | g`GL4 in Hgp ];
 
-    for w in Autmuimage do 
-      if <w,OmodN!(O!1)> in enhanced_set then 
-        is_split := true;
-      else 
-        is_split := false;
-      end if;
-    end for;
+    Hgp:=H`subgroup;
+    fixedspace:=FixedSubspace(Hgp);
+
+    gens:=Generators(Hgp);
 
     order:=H`order;
     index:=Order(G)/order;
 
-    //endomorphism_image_set:=Set([ h[1] : h in enhanced_set ]);
-    rho_end:=sub< GL(4,ZmodN) | Setseq(Set([ (g`GL4xGL4)[1] : g in Gelts | g`GL4 in Hgp ])) >;
+    piH := EnhancedCosetRepresentation(G,Hgp);
+    sigma := [ piH(v) : v in elliptic_eltsGL4 ];
+    genus:=EnhancedGenus(sigma);
+
+    rho_end_size:=Integers()!#Hgp/(#(GO meet Hgp));
 
     s := rec< RF | >;
     s`subgroup:=Hgp;
+    s`genus:=genus;
     s`order:=order;
     s`index:=index;
     s`fixedsubspace:=PrimaryAbelianInvariants(fixedspace);
-    s`generators:=gens;
-    s`split:=is_split;
-    s`endomorphism_representation:=rho_end;
-    s`atkin_lehners:=Sort([ SquarefreeFactorization(Integers()!Norm(x`element)) : x in Set([ (y`enhanced)[1] : y in Gelts | y`GL4 in Hgp  ]) ]);
+    s`endomorphism_representation:=rho_end_size;
 
-    if onlypotential then 
-      if #rho_end ne 1 then 
+    if PQMtorsion eq true then 
+      if s`endomorphism_representation gt 1 and s`fixedsubspace in possible_tors then 
         Append(~minimal_subs_init,s);
       end if;
     else 
@@ -721,17 +552,28 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
   end for;
 
   if minimal eq false then 
-    return minimal_subs_init;
+    if verbose eq true then 
+      printf "Quaternion order of discriminant %o\n", Discriminant(O);
+      printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
+      print "Genus | Index | #H | Torsion | #endo. field\n";
+      for s in minimal_subs_init do 
+        printf "%o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation;
+      end for;
+      return minimal_subs_init;
+    else 
+      return minimal_subs_init;
+    end if;
   else 
     minimal_subs:=<>;
     for s in minimal_subs_init do  
       F:=s`subgroup;
       tors:=s`fixedsubspace;
-      endorep:=s`endomorphism_representation;
-      AL:=s`atkin_lehners;
+      //endorep:=s`endomorphism_representation;
+      //AL:=s`atkin_lehners;
       if exists(e){ N : N in minimal_subs_init | F subset N`subgroup and 
-        tors eq N`fixedsubspace and F ne N`subgroup 
-         and AL eq N`atkin_lehners } then 
+        tors eq N`fixedsubspace and F ne N`subgroup }
+        //or exists(e){ N : N in minimal_subs_init | IsGLConjugate(F,N`subgroup) } 
+        then 
         ;
       else 
         Append(~minimal_subs,s);
@@ -740,8 +582,9 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     if verbose eq true then
       printf "Quaternion order of discriminant %o\n", Discriminant(O);
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
+      print "Genus | Index | #H | Torsion | #endo. field\n";
       for s in minimal_subs do 
-        printf "%o | %o | %o | %o | %o | %o \n",  s`index, s`order, s`split, s`fixedsubspace, GroupName(s`endomorphism_representation), s`atkin_lehners;
+        printf "%o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation;
       end for;
     end if;
     return minimal_subs;
@@ -750,30 +593,30 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
   {}
-  return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+  return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
   {}
   tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
   {}
   O:=MaximalOrder(B);
   tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, onlypotential:=true) -> Any
+intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=PQMtorsion) -> Any
   {}
   B:=QuaternionAlgebra(D);
   O:=MaximalOrder(B);
   tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, onlypotential:=onlypotential);
+  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
 

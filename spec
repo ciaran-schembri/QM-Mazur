@@ -6,4 +6,6 @@
   LFT.m
   utils.m
   enhanced-image.m
+  enhanced-constructors.m
+  genera.m
 }
