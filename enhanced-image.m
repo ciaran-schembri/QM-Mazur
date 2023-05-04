@@ -318,6 +318,51 @@ intrinsic EnhancedImageGL4(AutmuO::Map, O::AlgQuatOrd, N::RngIntElt) -> GrpMat
 end intrinsic;
 
 
+intrinsic EnhancedImageGL4(O::AlgQuatOrd, mu::AlgQuatElt, N::RngIntElt) -> GrpMat
+  {}
+
+  AutmuO:=Aut(O,mu);
+  assert MapIsHomomorphism(AutmuO);
+  OmodN:=quo(O,N);
+  return EnhancedImageGL4(AutmuO, OmodN);
+end intrinsic;
+
+intrinsic EnhancedImageGL4(O::AlgQuatOrd, mu::AlgQuatOrdElt, N::RngIntElt) -> GrpMat
+  {}
+
+  AutmuO:=Aut(O,mu);
+  assert MapIsHomomorphism(AutmuO);
+  OmodN:=quo(O,N);
+  return EnhancedImageGL4(AutmuO, OmodN);
+end intrinsic;
+
+
+
+intrinsic AutmuOinGL4modN(AutmuO::Map,O::AlgQuatOrd,N::RngIntElt : basis:=[]) -> GrpMat 
+  {}  
+  if basis eq [] then 
+    basis:=Basis(O);
+  end if; 
+  elts:=[ NormalizingElementToGL4modN(AutmuO(s),O,N : basis:=basis) : s in Domain(AutmuO) ];
+  group:= sub< GL(4,ResidueClassRing(N)) | elts >;
+  assert #group eq #elts;
+  return group;
+end intrinsic;
+
+
+intrinsic AutmuOinGL4modN(O::AlgQuatOrd,mu::AlgQuatElt,N::RngIntElt : basis:=[]) -> GrpMat 
+  {} 
+  AutmuO:=Aut(O,mu);
+  return AutmuOinGL4modN(AutmuO,O,N);
+end intrinsic;
+
+intrinsic AutmuOinGL4modN(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : basis:=[]) -> GrpMat 
+  {} 
+  AutmuO:=Aut(O,mu);
+  return AutmuOinGL4modN(AutmuO,O,N);
+end intrinsic;
+
+
 intrinsic FixedSubspace(H::GrpMat) -> GrpAb 
   {}
   N:=#BaseRing(H);
@@ -477,13 +522,13 @@ end intrinsic;
 
 
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true, lowgenus:=true) -> Any
   {return all of the enhanced subgroups in a list with each one being a record}
   assert N gt 2;
   B:=QuaternionAlgebra(O);
   BxmodQx:=QuaternionAlgebraModuloScalars(B);
   OmodN:=quo(O,N);
-  possible_tors:=[ [], [2], [3], [2,3], [2,2], [3,3] , [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
+  possible_tors:=[  [2], [3], [2,3], [2,2], [3,3], [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
 
   //mu:=PolarizedElementOfDegree(O,1);
   AutFull:=Aut(O,mu);
@@ -498,27 +543,31 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     generators,
     split,
     endomorphism_representation,
-    atkin_lehners,
-    norm
+    AutmuO_norms
     >
     ;
 
-  NBOgens:=NormalizerPlusGeneratorsEnhanced(O,mu);
-  NBOgensGL4:=[ EnhancedElementInGL4modN(g,N) : g in NBOgens ]; 
-  G := sub<GL(4,ResidueClassRing(N)) |  NBOgensGL4 >;
+  NBOplusgens:=NormalizerPlusGeneratorsEnhanced(O,mu);
+  NBOplusgensGL4:=[ EnhancedElementInGL4modN(g,N) : g in NBOplusgens ]; 
+
+  G,Gelts:=EnhancedImageGL4(AutFull,O,N);
   assert -G!1 in G;
+  Gplus:=sub< G | NBOplusgensGL4 >;
+  assert #G/#Gplus eq 2;
   GO:= G meet sub< GL(4,ResidueClassRing(N)) | UnitGroup(O,N) >;
   //assert #G/4 eq #GO; //if twisting
 
   ZmodN:=ResidueClassRing(N);
-  subs:=Subgroups(G);
   Autmuimage:=[AutFull(c) : c in Domain(AutFull) ];
 
-  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in  NBOgens];
-  //[ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
+  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ];
+  K:=[ k : k in SemidirectToNormalizerKernel(O,mu) ];
+  KG:=sub< Gplus | [ EnhancedElementInGL4modN(k,N) : k in K ] >;
+
+  Gplusquo,Gmap:= quo< Gplus | KG >;
 
   minimal_subs_init:=<>;
-
+  subs:=Subgroups(G);
   for H in subs do
 
     Hgp:=H`subgroup;
@@ -529,11 +578,26 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     order:=H`order;
     index:=Order(G)/order;
 
-    piH := EnhancedCosetRepresentation(G,Hgp);
-    sigma := [ piH(v) : v in elliptic_eltsGL4 ];
+    Hplus := sub< Gplus | Hgp meet Gplus >;
+    HplusKG:= sub< Gplus | Hplus, KG >;
+    HplusKGquoalt:= quo< HplusKG | KG >;
+
+    Hplusquo:=Gmap(Hplus);
+    assert GroupName(Hplusquo) eq GroupName(HplusKGquoalt);
+
+    index:=#Gplusquo/#Hplusquo;
+
+    T:=CosetTable(Gplusquo,Hplusquo);
+    piH:=CosetTableToRepresentation(Gplusquo,T);
+    //piH := EnhancedCosetRepresentation(G,Hgp,Gammastar_plus);
+    sigma := [ piH(Gmap(v)) : v in elliptic_eltsGL4 ];
     genus:=EnhancedGenus(sigma);
 
-    rho_end_size:=Integers()!#Hgp/(#(GO meet Hgp));
+  
+    Henh:=[ g`enhanced : g in Gelts | g`GL4 in Hgp ];
+    rho_end_norms:= Set([ Abs(SquarefreeFactorization(Integers()!Norm(w[1]`element))) : w in Henh ]);
+    rho_end:= sub< GL(4,ZmodN) | [ NormalizingElementToGL4modN(w[1],O,N) : w in Henh ] >;
+    // rho_end_size:=Integers()!#Hgp/(#(GO meet Hgp));
 
     s := rec< RF | >;
     s`subgroup:=Hgp;
@@ -541,24 +605,38 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     s`order:=order;
     s`index:=index;
     s`fixedsubspace:=PrimaryAbelianInvariants(fixedspace);
-    s`endomorphism_representation:=rho_end_size;
+    s`endomorphism_representation:=GroupName(rho_end);
+    s`AutmuO_norms:=rho_end_norms;
 
     if PQMtorsion eq true then 
-      if s`endomorphism_representation gt 1 and s`fixedsubspace in possible_tors then 
-        Append(~minimal_subs_init,s);
+      if s`endomorphism_representation ne "C1" and s`fixedsubspace in possible_tors then
+        if lowgenus eq true then  
+          if genus le 1 then 
+            Append(~minimal_subs_init,s);
+          end if;
+        else 
+          Append(~minimal_subs_init,s);
+        end if;
       end if;
     else 
-      Append(~minimal_subs_init,s);
+      if lowgenus eq true then  
+        if genus le 1 then 
+          Append(~minimal_subs_init,s);
+        end if;
+      else 
+        Append(~minimal_subs_init,s);
+      end if;
     end if;
   end for;
 
   if minimal eq false then 
     if verbose eq true then 
       printf "Quaternion order of discriminant %o\n", Discriminant(O);
+      printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus | Index | #H | Torsion | #endo. field\n";
+      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
       for s in minimal_subs_init do 
-        printf "%o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation;
+        printf "%o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms;
       end for;
       return minimal_subs_init;
     else 
@@ -582,10 +660,11 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     end for;
     if verbose eq true then
       printf "Quaternion order of discriminant %o\n", Discriminant(O);
+      printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus | Index | #H | Torsion | #endo. field\n";
+      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
       for s in minimal_subs do 
-        printf "%o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation;
+        printf "%o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms;
       end for;
     end if;
     return minimal_subs;
@@ -601,23 +680,26 @@ end intrinsic;
 
 intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
-  tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  if HasPolarizedElementOfDegree(O,del) then 
+    tr,mu:=HasPolarizedElementOfDegree(O,del);
+    return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  else 
+    printf "No polarization of degree %o\n", del;
+    return "";
+  end if;
 end intrinsic;
 
 intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   O:=MaximalOrder(B);
-  tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
 intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
   {}
   B:=QuaternionAlgebra(D);
   O:=MaximalOrder(B);
-  tr,mu:=HasPolarizedElementOfDegree(O,del);
-  return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
 end intrinsic;
 
 

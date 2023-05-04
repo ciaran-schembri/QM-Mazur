@@ -19,6 +19,11 @@ S,EnhancedImagePermutation,"AutmuO is a map from a finite group C -> B^x, which 
 S,EnhancedElementRecord,"given <w,x> in Autmu(O) rtimes (O/N) return <w,x> as a record along with its embedding in GL_4xGL_4 and just GL_4",0,1,0,0,0,0,0,0,0,-1,,-1,-38,-38,-38,-38,-38
 S,EnhancedImageGL4,,0,2,0,0,0,0,0,0,0,AlgQuatOrdRes,,0,0,175,,178,-38,-38,-38,-38,-38
 S,EnhancedImageGL4,,0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,175,,178,-38,-38,-38,-38,-38
+S,EnhancedImageGL4,,0,3,0,0,0,0,0,0,0,148,,0,0,18,,0,0,19,,178,-38,-38,-38,-38,-38
+S,EnhancedImageGL4,,0,3,0,0,0,0,0,0,0,148,,0,0,20,,0,0,19,,178,-38,-38,-38,-38,-38
+S,AutmuOinGL4modN,,0,3,0,0,0,0,0,0,0,148,,0,0,19,,0,0,175,,178,-38,-38,-38,-38,-38
+S,AutmuOinGL4modN,,0,3,0,0,0,0,0,0,0,148,,0,0,18,,0,0,19,,178,-38,-38,-38,-38,-38
+S,AutmuOinGL4modN,,0,3,0,0,0,0,0,0,0,148,,0,0,20,,0,0,19,,178,-38,-38,-38,-38,-38
 S,FixedSubspace,,0,1,0,0,0,0,0,0,0,178,,107,-38,-38,-38,-38,-38
 S,HasPolarizedElementOfDegree,return an element mu of O such that mu^2 + d*disc(O) = 0 if it exists,0,2,0,0,0,0,0,0,0,148,,0,0,19,,36,20,-38,-38,-38,-38
 S,DegreeOfPolarizedElement,degree of mu,0,2,0,0,0,0,0,0,0,-1,,0,0,19,,148,-38,-38,-38,-38,-38

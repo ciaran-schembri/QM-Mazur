@@ -15,42 +15,81 @@ intrinsic EnhancedGenus(sigma::SeqEnum) -> RngIntElt
   return g;
 end intrinsic;
 
-intrinsic EnhancedCosetRepresentation(G::GrpMat,H::GrpMat) -> HomGrp
+intrinsic EnhancedCosetRepresentation(G::GrpMat,H::GrpMat,Gplus::GrpMat) -> HomGrp
   {}
-  if -H!1 notin H then 
-    Hnew:=sub<G | H, -H!1 >;
-  else 
-    Hnew:=H;
-  end if;
-  T := CosetTable(G,Hnew);
+
+  Hnew1:=sub<G | H, -H!1 >;
+  Hnew2:= Hnew1 meet Gplus;
+  T := CosetTable(G,Hnew2);
   piH := CosetTableToRepresentation(G,T);
   return piH;
 end intrinsic;
 
+intrinsic SemidirectToNormalizerKernel(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> SeqEnum 
+  {return the cyclic subgroup of O^x}
+  B:=QuaternionAlgebra(O);
+  Ocirc:=EnhancedSemidirectProduct(O);
+  AutFull,autmuOseq:=Aut(O,mu);
+  Oxcyc:= [ (1/Integers()!Sqrt(Norm(a`element)))*a`element : a in autmuOseq | IsSquare(Norm(a`element)) ];
+  ker:=[ Ocirc!<x,x^-1> : x in Oxcyc ];
+  assert #ker in [1,2,3];
+  assert Set([ Norm(e) eq 1 : e in Oxcyc ]) eq Set([true]);
+  if #ker eq 1 then 
+    assert ker[1] eq Ocirc!<B!1,O!1> or ker[1] eq Ocirc!<B!1,-O!1>;
+    return [ Ocirc!<B!1,O!1>,Ocirc!<B!1,-O!1> ],Ocirc!<B!1,-O!1>;
+  else 
+    gen:=[ e : e in ker | Order(e) eq 2*#ker ];
+    assert #gen eq 1;
+    gen:=gen[1];
+    newker:=[ gen^i : i in [1..Order(gen)] ];
+    assert #Set(newker) eq Order(gen);
+    //assert its cyclic in GL4
+    return newker,gen;
+  end if;
+end intrinsic;
+
+intrinsic SemidirectToNormalizerKernel(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum 
+  {return the cyclic subgroup of O^x}
+  return SemidirectToNormalizerKernel(O,O!mu);
+end intrinsic;
 
 intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
   Ocirc:=EnhancedSemidirectProduct(O);
   AutFull,autmuOseq:=Aut(O,mu);
+  ker,kergen:=SemidirectToNormalizerKernel(O,mu);
+
+
+  B:=QuaternionAlgebra(O);
+  BxmodQx:=QuaternionAlgebraModuloScalars(B);
+  proja:=BxmodQx!(B!a);
+  orda:=Order(proja);
+
+  //[ elt : elt in autmuOseq | elt in ker ];
 
   assert a^2/Norm(a) in O;
   assert Norm(a) gt 0;
+  W:=[];
   for w in autmuOseq do 
     if IsSquare(Rationals()!Abs(Norm((w`element)^-1*a))) then
-      w1:=w;
       tr,c:=IsSquare(Rationals()!Abs(Norm((w`element)^-1*a)));
       x:=(1/c)*((w`element)^-1)*a;
       assert x in O;
       assert Norm(x) in {1,-1};
       ell:=Ocirc!<w,O!x>;
-      return ell;
+      if Min([ i : i in [1..orda] | ell^i in ker]) eq orda then 
+        Append(~W,ell);
+        //return ell;
+      end if;
     end if;
   end for;
+  return W[1];
 end intrinsic;
 
 intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  return NormalizerToAutmuO(a,QuaternionAlgebra(O)!mu,O);
+  B:=QuaternionAlgebra(O);
+  return NormalizerToAutmuO(a,B!mu,O);
 end intrinsic;
 
 
@@ -116,31 +155,58 @@ intrinsic NormalizerPlusGenerators(O::AlgQuatOrd) -> SeqEnum
 end intrinsic;
 
 
-intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatElt) -> Tup 
-  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
-  return < NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
-end intrinsic;
 
 intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Tup 
   {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
-  B:=QuaternionAlgebra(O);
-  return < NormalizerToAutmuO(a,B!mu,O) : a in NormalizerPlusGenerators(O) >;
+  ker,kergen:=SemidirectToNormalizerKernel(O,mu);
+  Ocirc:=EnhancedSemidirectProduct(O);
+  return [ Ocirc!NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) ] cat [Ocirc!kergen];
+end intrinsic;
+
+intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatElt) -> Tup 
+  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
+  return NormalizerPlusGeneratorsEnhanced(O,O!mu);
+end intrinsic;
+
+intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,del::RngIntElt) -> Tup 
+  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
+  tr,mu:=HasPolarizedElementOfDegree(O,del);
+  return NormalizerPlusGeneratorsEnhanced(O,O!mu);
+end intrinsic;
+
+
+
+intrinsic NormalizerPlusGeneratorsGL4modN(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt) -> SeqEnum 
+  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
+  return [ EnhancedElementInGL4modN(g,N) : g in NormalizerPlusGeneratorsEnhanced(O,mu) ];
+end intrinsic;
+
+intrinsic NormalizerPlusGeneratorsGL4modN(O::AlgQuatOrd,mu::AlgQuatElt,N::RngIntElt) -> SeqEnum 
+  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
+  return [ EnhancedElementInGL4modN(g,N) : g in NormalizerPlusGeneratorsEnhanced(O,O!mu) ];
+end intrinsic;
+
+
+intrinsic NormalizerPlusGeneratorsGL4modN(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt) -> SeqEnum 
+  {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
+  tr,mu:=HasPolarizedElementOfDegree(O,del);
+  return [ EnhancedElementInGL4modN(g,N) : g in NormalizerPlusGeneratorsEnhanced(O,mu) ];
 end intrinsic;
 
 
 
 
 
-intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum 
+intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> SeqEnum 
   {return the elliptic elements}
-  return < NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) >;
+  Ocirc:=EnhancedSemidirectProduct(O);
+  return [ Ocirc!NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) ];
 end intrinsic;
 
-intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> SeqEnum
+intrinsic EnhancedEllipticElements(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum
   {return the elliptic elements of the enhanced semidirect product}
 
-  B:=QuaternionAlgebra(O);
-  return EnhancedEllipticElements(O,B!mu);
+  return EnhancedEllipticElements(O,O!mu);
 end intrinsic;
 
 
