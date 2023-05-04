@@ -673,33 +673,33 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
   {}
-  return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
   {}
   if HasPolarizedElementOfDegree(O,del) then 
     tr,mu:=HasPolarizedElementOfDegree(O,del);
-    return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+    return AllEnhancedSubgroups(O,mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
   else 
     printf "No polarization of degree %o\n", del;
     return "";
   end if;
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
   {}
   O:=MaximalOrder(B);
-  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true) -> Any
+intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
   {}
   B:=QuaternionAlgebra(D);
   O:=MaximalOrder(B);
-  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion);
+  return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
 end intrinsic;
 
 
