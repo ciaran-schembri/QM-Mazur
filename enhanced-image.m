@@ -528,7 +528,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
   B:=QuaternionAlgebra(O);
   BxmodQx:=QuaternionAlgebraModuloScalars(B);
   OmodN:=quo(O,N);
-  possible_tors:=[  [2], [3], [2,3], [2,2], [3,3], [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
+  possible_tors:=[   [3], [2,3], [3,3], [4], [2,4], [2,2,2], [2,2,3],[3,4],[4,4], [2,2,4],[2,3,3] ];
 
   //mu:=PolarizedElementOfDegree(O,1);
   AutFull:=Aut(O,mu);
@@ -583,7 +583,9 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     HplusKGquoalt:= quo< HplusKG | KG >;
 
     Hplusquo:=Gmap(Hplus);
-    assert GroupName(Hplusquo) eq GroupName(HplusKGquoalt);
+    if not IsIsomorphic(Hplusquo,HplusKGquoalt) then 
+      H;
+    end if;
 
     index:=#Gplusquo/#Hplusquo;
 
