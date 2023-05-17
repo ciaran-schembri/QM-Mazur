@@ -522,7 +522,7 @@ end intrinsic;
 
 
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true, lowgenus:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,PQMtorsion:=true,verbose:=true, lowgenus:=false) -> Any
   {return all of the enhanced subgroups in a list with each one being a record}
   assert N gt 2;
   B:=QuaternionAlgebra(O);
@@ -597,9 +597,17 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 
   
     Henh:=[ g`enhanced : g in Gelts | g`GL4 in Hgp ];
+    Hautmus:= Setseq(Set([ h[1] : h in Henh ]));
     rho_end_norms:= Set([ Abs(SquarefreeFactorization(Integers()!Norm(w[1]`element))) : w in Henh ]);
     rho_end:= sub< GL(4,ZmodN) | [ NormalizingElementToGL4modN(w[1],O,N) : w in Henh ] >;
     // rho_end_size:=Integers()!#Hgp/(#(GO meet Hgp));
+
+    is_split:=true;
+    for w in Hautmus do 
+      if <w,OmodN!(O!1)> notin Henh then 
+        is_split := false;
+      end if;
+    end for;
 
     s := rec< RF | >;
     s`subgroup:=Hgp;
@@ -609,6 +617,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     s`fixedsubspace:=PrimaryAbelianInvariants(fixedspace);
     s`endomorphism_representation:=GroupName(rho_end);
     s`AutmuO_norms:=rho_end_norms;
+    s`split:=is_split;
 
     if PQMtorsion eq true then 
       if s`endomorphism_representation ne "C1" and s`fixedsubspace in possible_tors then
@@ -638,7 +647,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
       print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
       for s in minimal_subs_init do 
-        printf "%o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms;
+        printf "%o | %o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split;
       end for;
       return minimal_subs_init;
     else 
@@ -666,7 +675,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
       print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
       for s in minimal_subs do 
-        printf "%o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms;
+        printf "%o | %o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split;
       end for;
     end if;
     return minimal_subs;
