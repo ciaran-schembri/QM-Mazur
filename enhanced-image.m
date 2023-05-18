@@ -576,7 +576,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     gens:=Generators(Hgp);
 
     order:=H`order;
-    index:=Order(G)/order;
+    //index:=Order(G)/order;
 
     Hplus := sub< Gplus | Hgp meet Gplus >;
     HplusKG:= sub< Gplus | Hplus, KG >;
@@ -645,7 +645,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Quaternion order of discriminant %o\n", Discriminant(O);
       printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
+      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms | Split semidirect\n";
       for s in minimal_subs_init do 
         printf "%o | %o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split;
       end for;
@@ -673,7 +673,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Quaternion order of discriminant %o\n", Discriminant(O);
       printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms\n";
+      print "Genus | (Fuchsian) Index | #H | Torsion | Gal(L|Q) | AutmuO norms | Split semidirect\n";
       for s in minimal_subs do 
         printf "%o | %o | %o | %o | %o | %o | %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split;
       end for;
@@ -684,12 +684,12 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
 end intrinsic;
 
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=false) -> Any
   {}
   return AllEnhancedSubgroups(MaximalOrder(B),mu,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
+intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=false) -> Any
   {}
   if HasPolarizedElementOfDegree(O,del) then 
     tr,mu:=HasPolarizedElementOfDegree(O,del);
@@ -700,13 +700,13 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,del::RngIntElt,N::RngIntElt : minim
   end if;
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
+intrinsic AllEnhancedSubgroups(B::AlgQuat,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=false) -> Any
   {}
   O:=MaximalOrder(B);
   return AllEnhancedSubgroups(O,del,N : minimal:=minimal, verbose:=verbose, PQMtorsion:=PQMtorsion, lowgenus:=lowgenus);
 end intrinsic;
 
-intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=true) -> Any
+intrinsic AllEnhancedSubgroups(D::RngIntElt,del::RngIntElt,N::RngIntElt : minimal:=true,verbose:=true, PQMtorsion:=true,lowgenus:=false) -> Any
   {}
   B:=QuaternionAlgebra(D);
   O:=MaximalOrder(B);

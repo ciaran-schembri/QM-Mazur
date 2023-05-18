@@ -128,7 +128,9 @@ intrinsic NormalizerPlusGenerators(O::AlgQuatOrd) -> SeqEnum
     tr,map:=IsIsomorphic(B10,B : Isomorphism:=true);
     assert tr;
     B10elliptic_elts:=[ s2,s2p,s2pp,s3];
-    Oelliptic_elts:=[ O!map(a) : a in B10elliptic_elts ];
+    assert IsScalar(&*B10elliptic_elts);
+    assert IsScalar(s2^2); assert IsScalar(s2p^2); assert IsScalar(s2pp^2); assert IsScalar(s3^3);
+    Oelliptic_elts:=[ map(a) : a in B10elliptic_elts ];
     //assert Set([ Norm(a) : a in Oelliptic_elts ]) eq {2,6,12};
     return Oelliptic_elts;
   elif Discriminant(O) eq 15 then 
