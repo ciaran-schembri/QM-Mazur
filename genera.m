@@ -53,7 +53,7 @@ intrinsic SemidirectToNormalizerKernel(O::AlgQuatOrd,mu::AlgQuatElt) -> SeqEnum
   return SemidirectToNormalizerKernel(O,O!mu);
 end intrinsic;
 
-intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
   Ocirc:=EnhancedSemidirectProduct(O);
   AutFull,autmuOseq:=Aut(O,mu);
@@ -86,21 +86,20 @@ intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQ
   return W[1];
 end intrinsic;
 
-intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  B:=QuaternionAlgebra(O);
-  return NormalizerToAutmuO(a,B!mu,O);
+  return NormalizerToAutmuO(O!a,O!mu,O);
 end intrinsic;
 
-
-intrinsic NormalizerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
-  {}
-  return NormalizerToAutmuO(QuaternionAlgebra(O)!a,QuaternionAlgebra(O)!mu,O);
-end intrinsic;
 
 intrinsic NormalizerToAutmuO(a::AlgQuatOrdElt,mu::AlgQuatElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
   {}
-  return NormalizerToAutmuO(QuaternionAlgebra(O)!a,mu,O);
+  return NormalizerToAutmuO(a,O!mu,O);
+end intrinsic;
+
+intrinsic NormalizerToAutmuO(a::AlgQuatElt,mu::AlgQuatOrdElt,O::AlgQuatOrd) -> AlgQuatEnhElt 
+  {}
+  return NormalizerToAutmuO(O!a,mu,O);
 end intrinsic;
 
 
@@ -130,7 +129,7 @@ intrinsic NormalizerPlusGenerators(O::AlgQuatOrd) -> SeqEnum
     B10elliptic_elts:=[ s2,s2p,s2pp,s3];
     assert IsScalar(&*B10elliptic_elts);
     assert IsScalar(s2^2); assert IsScalar(s2p^2); assert IsScalar(s2pp^2); assert IsScalar(s3^3);
-    Oelliptic_elts:=[ map(a) : a in B10elliptic_elts ];
+    Oelliptic_elts:=[ O!map(a) : a in B10elliptic_elts ];
     //assert Set([ Norm(a) : a in Oelliptic_elts ]) eq {2,6,12};
     return Oelliptic_elts;
   elif Discriminant(O) eq 15 then 
@@ -143,7 +142,7 @@ intrinsic NormalizerPlusGenerators(O::AlgQuatOrd) -> SeqEnum
     B:=QuaternionAlgebra(O);
     tr,map:=IsIsomorphic(B15,B : Isomorphism:=true);
     assert tr;
-    B15elliptic_elts:=[ s2,s2p,s2pp,s6];
+    B15elliptic_elts:=[ s2,s2p,s2pp,s6 ];
     assert IsScalar(&*B15elliptic_elts);
     assert IsScalar(s2^2); assert IsScalar(s2p^2); assert IsScalar(s2pp^2); assert IsScalar(s6^6);
 
@@ -162,7 +161,8 @@ intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatOrdElt) -> T
   {return generators of the positive norm elements which normalize O in the enhanced semidirect product}
   ker,kergen:=SemidirectToNormalizerKernel(O,mu);
   Ocirc:=EnhancedSemidirectProduct(O);
-  return [ Ocirc!NormalizerToAutmuO(a,mu,O) : a in NormalizerPlusGenerators(O) ] cat [Ocirc!kergen];
+  Nplus:=NormalizerPlusGenerators(O);
+  return [ Ocirc!NormalizerToAutmuO(O!a,O!mu,O) : a in NormalizerPlusGenerators(O) ] cat [Ocirc!kergen];
 end intrinsic;
 
 intrinsic NormalizerPlusGeneratorsEnhanced(O::AlgQuatOrd,mu::AlgQuatElt) -> Tup 
