@@ -8,4 +8,5 @@
   enhanced-image.m
   enhanced-constructors.m
   genera.m
+  read-write.m
 }

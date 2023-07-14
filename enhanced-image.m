@@ -549,7 +549,8 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     generators,
     split,
     endomorphism_representation,
-    AutmuO_norms
+    AutmuO_norms,
+    ramification_data
     >
     ;
 
@@ -627,6 +628,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
     s`AutmuO_norms:=rho_end_norms;
     s`split:=is_split;
     s`generators:=Henhgens;
+    s`ramification_data:=sigma;
 
     if PQMtorsion eq true then 
       if s`endomorphism_representation ne "C1" and s`fixedsubspace in possible_tors then
@@ -658,7 +660,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
       print "Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators\n";
       for s in minimal_subs_init do 
-        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators;
+        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators, s`ramification_data;
       end for;
       if write eq true then 
         filename:=Sprintf("QM-Mazur/genera-tables/genera-D%o-deg%o-N%o.m",D,del,N);
@@ -670,7 +672,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
         Write(filename,Sprintf("Polarized Element \\mu=%o of degree %o and norm %o", mu, DegreeOfPolarizedElement(O,mu),Norm(mu)));
         Write(filename,"Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators");
         for s in minimal_subs_init do 
-          Write(filename,Sprintf("%o || %o || %o || %o || %o || %o || %o || %o", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators));
+          Write(filename,Sprintf("%o || %o || %o || %o || %o || %o || %o || %o || %o", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators, s`ramification_data));
         end for;
       end if;
     end if;
@@ -699,7 +701,7 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
       print "Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators\n";
       for s in minimal_subs do 
-        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, Sprint(s`generators);
+        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, Sprint(s`generators), s`ramification_data;
       end for;
     end if;
     return minimal_subs;
