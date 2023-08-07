@@ -300,7 +300,7 @@ intrinsic TorsionHeuristicUpToTwistDivisibleBy(IgusaClebsch::SeqEnum : bound:=15
   end for;
   return tors;
 
-end intrinsic;
+end intrinsic;*/
 
 
 

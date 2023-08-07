@@ -207,10 +207,21 @@ intrinsic PQMIgusaClebsch(D::RngIntElt, j::FldRatElt : LinYang:=true) -> SeqEnum
 end intrinsic;
 
 
-intrinsic MestreObstructionIsSplit(D::RngIntElt, j::FldRatElt) -> BoolElt
+intrinsic MestreObstructionIsSplit(D::RngIntElt, j::FldRatElt : LinYang:=true) -> BoolElt
   {Mestre obstruction}
-  
-  if D eq 15 then
+
+  if D eq 6 then 
+    assert LinYang eq false;
+    a:=TrialRepresentativeModuloSquares(-6*j);
+    b:=TrialRepresentativeModuloSquares(-2*(27*j+16));
+    if a*b ne 0 then 
+      H:=QuaternionAlgebra<Rationals() | a , b >;
+      //return Discriminant(H) eq 1;
+      return IsMatrixRing(H);
+    else 
+      return false;
+    end if;    
+  elif D eq 15 then
     a:=-15*j;
     b:=-3*(j+3)*(27*j+1);
     if a*b ne 0 then 

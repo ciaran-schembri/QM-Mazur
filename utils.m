@@ -146,3 +146,86 @@ intrinsic IsNumberField(A::AlgAss) -> BoolElt, FldNum
 end intrinsic;
 
 
+intrinsic SquarefreeFactorization(x::FldRatElt) -> FldRatElt
+  {squarefree factorization of a rational number}
+  numx:=Numerator(x);
+  denx:=Denominator(x);
+
+  numa,c:=SquarefreeFactorization(numx);
+  dena,d:=SquarefreeFactorization(denx);
+
+  return numa/dena;
+end intrinsic;
+
+
+intrinsic RepresentativeModuloSquares(x::FldRatElt) -> RngIntElt
+  {x = q^2*a where a is a squarefree integer, return a}
+
+  numx:=Numerator(x);
+  denx:=Denominator(x);
+
+  numa,c:=SquarefreeFactorization(numx);
+  dena,d:=SquarefreeFactorization(denx);
+  
+  a:=numa*dena;
+  assert IsSquarefree(a);
+  assert IsSquare(x/a);
+  return numa*dena;
+end intrinsic;
+
+
+intrinsic TrialRepresentativeModuloSquares(x::FldRatElt : divisionbound:=1000000000) -> RngIntElt
+  {x = q^2*a where a is a squarefree integer, return a}
+
+  numx:=Numerator(x);
+  denx:=Denominator(x);
+
+  trinum1,trinum2:=TrialDivision(numx,divisionbound);
+  trinum2:=trinum2 cat [1];
+  assert (&*[ a[1]^a[2] : a in trinum1 ])*trinum2[1] eq Abs(numx);
+
+  triden1,triden2:=TrialDivision(denx,divisionbound);
+  triden2:=triden2 cat [1];
+  assert (&*[ a[1]^a[2] : a in triden1 ])*triden2[1] eq Abs(denx);
+
+  newnum:=(&*[ a[1]^(a[2] mod 2) : a in trinum1 ])*trinum2[1];
+  newden:=(&*[ a[1]^(a[2] mod 2) : a in triden1 ])*triden2[1];
+
+  newx:=Sign(x)*newnum*newden;
+
+  return newx;
+end intrinsic;
+
+
+
+
+intrinsic SquarefreeFactorization(phi::FldFunFracSchElt[CrvEll[FldRat]]) -> FldFunFracSchElt[CrvEll[FldRat]]
+  {If phi(x) = f(x)/g(x) and f = c^2*f0, g = d^2*g0 with f0, g0 irreducible; return f0/g0.}
+  
+  KX<x,y>:=Parent(phi);
+  phi_num:=KX!Numerator(phi);
+  phi_den:=KX!Denominator(phi);
+
+  Rz<z>:=PolynomialRing(Rationals());
+  phi_numz:=Rz!Evaluate(phi_num,[z]);
+  phi_denz:=Rz!Evaluate(phi_den,[z]);
+
+  fac_numz:=Factorization(phi_numz);
+  fac_denz:=Factorization(phi_denz);
+
+  fac_l1:=Factorization(LeadingCoefficient(phi_numz));
+  fac_l2:=Factorization(LeadingCoefficient(phi_denz));
+
+  newnumz:=(&*[ a[1]^(a[2] mod 2) : a in fac_l1 ])*(&*[ a[1]^(a[2] mod 2) : a in fac_numz ]);
+  newdenz:=(&*[ a[1]^(a[2] mod 2) : a in fac_l2 ])*(&*[ a[1]^(a[2] mod 2) : a in fac_denz ]);
+  
+  phi_sqfree:=(KX!Evaluate(newnumz,x))/(KX!Evaluate(newdenz,x));
+
+  return phi_sqfree;
+end intrinsic;
+
+
+
+
+
+
