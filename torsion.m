@@ -154,7 +154,8 @@ intrinsic TorsionGroupHeuristicUpToTwist(IgusaClebsch::SeqEnum:group:=AbelianGro
     ChangeUniverse(~IgusaClebsch,Rationals());
   end if;
   assert Universe(IgusaClebsch) eq Rationals();
-  badprimes:=PrimeDivisors(&*([ Denominator(I) : I in IgusaClebsch ] cat [Numerator(IgusaClebsch[4])])*30);
+  bad_primes_init:=Setseq(Set([ Denominator(I) : I in IgusaClebsch ] cat [Numerator(IgusaClebsch[4])] cat [2,3,5]));
+  badprimes:=PrimeDivisors(&*([ a : a in bad_primes_init | a ne 0 ]));
   primes:=[ a : a in PrimesUpTo(bound) | a notin badprimes ];
   possible_groups:=[];
   IgusaClebschModp:=ChangeUniverse(IgusaClebsch,FiniteField(primes[1]^e));

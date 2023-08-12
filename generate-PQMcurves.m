@@ -4,7 +4,7 @@
 Rx<x>:=PolynomialRing(Rationals());
 //BelyiMap:=-1/27*(x*(x-3)^2/4);
 
-intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, LinYang:=true, j_list:=[],MestreIsSplit:=false, exponent:=1, BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="") -> Any
+intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, LinYang:=true, j_list:=[],MestreIsSplit:=false, exponent:=1, BelyiMap:=PolynomialRing(Rationals()).1,size:=1000,WriteToFile:="", global:=false) -> Any
   {}
   Rx<x>:=PolynomialRing(Rationals());
   prec := 500;
@@ -32,7 +32,19 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, 
             tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100,exponent:=exponent);
             invr_heur:=< PrimaryAbelianInvariants(gp) : gp in tors_heur >;
             inv:=Sprint(invr_heur);
-            data:=Sprintf("%o||%o",IgusaClebsch, inv); data;
+            if global eq true then 
+              C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+              if BaseRing(C) eq Rationals() then 
+                X:=ReducedWamelenModel(C);
+              else 
+                X:=C;
+              end if;
+              data:=Sprintf("%o||%o",Coefficients(HyperellipticPolynomials(X)),PrimaryAbelianInvariants(TorsionSubgroup(Jacobian(X))));
+            else 
+              data:=Sprintf("%o||%o",IgusaClebsch, inv); 
+            end if;
+            data;
+
             Append(~torsion_jsQ,j);
             if WriteToFile ne "" then 
               PrintFile(WriteToFile,data);
