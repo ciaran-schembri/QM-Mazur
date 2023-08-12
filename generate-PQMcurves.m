@@ -9,6 +9,7 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, 
   Rx<x>:=PolynomialRing(Rationals());
   prec := 500;
   F := RationalsExtra(prec);
+  Xbase:=Curve(Parent(BelyiMap));
 
   if j_list eq [] then
     print "creating js by steadily increasing height";
@@ -24,8 +25,8 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, 
       extra_b:=[ a/height : a in [-height..height] | a ne 0 and GCD(height,a) eq 1 ];
       extra := extra_a cat extra_b;
       for q in extra do
-        j:=Evaluate(BelyiMap,q);
-        if MestreIsSplit eq false or (MestreIsSplit eq true and MestreObstructionIsSplit(D,j)) then  
+        j:=BelyiMap(Xbase![q,1]);
+        if MestreIsSplit eq false or (MestreIsSplit eq true and MestreObstructionIsSplit(D,j : LinYang:=LinYang)) then  
           IgusaClebsch:=PQMIgusaClebsch(D,j : LinYang:=LinYang);
           if torsion eq true then
             tors_heur:=TorsionGroupHeuristicUpToTwist(IgusaClebsch : bound:=100,exponent:=exponent);
@@ -48,10 +49,15 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, 
             X;
             XF := ChangeRing(X,F);
             _,B:=HeuristicEndomorphismAlgebra(XF : CC:=true);
-            B;
             tr,A:=IsQuaternionAlgebra(B);
-            tr;
-            if tr then Discriminant(A); end if;
+            printf "The geometric endomorphisms are a quaternion algebra: %o\n",tr;
+            if tr then printf "The discriminant of the quaternion algebra is\n %o\n", Discriminant(A); end if;
+            _,E:=HeuristicEndomorphismAlgebra(XF : Geometric:=false);
+            tr,Efld:=IsNumberField(E);
+            if tr then 
+              printf "The discriminant of the endomorphisms over the base field (as a number field) is %o\n", SquarefreeFactorization(Discriminant(Efld));
+            end if;
+            print "============================";
           end if;
         end if;
       end for;
@@ -86,7 +92,6 @@ intrinsic GeneratePQMCurves(D::RngIntElt : endomorphisms:=false, torsion:=true, 
             printf "The geometric endomorphisms are a quaternion algebra: %o",tr;
             if tr then printf "The discriminant of the quaternion algebra is %o", Discriminant(A); end if;
             _,E:=HeuristicEndomorphismAlgebra(XF : Geometric:=false);
-
           end if;
         end if;
       end if;

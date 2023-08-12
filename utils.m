@@ -177,23 +177,29 @@ end intrinsic;
 intrinsic TrialRepresentativeModuloSquares(x::FldRatElt : divisionbound:=1000000000) -> RngIntElt
   {x = q^2*a where a is a squarefree integer, return a}
 
-  numx:=Numerator(x);
-  denx:=Denominator(x);
+  if x eq 0 then 
+    return x;
+  else 
+    numx:=Numerator(x);
+    denx:=Denominator(x);
 
-  trinum1,trinum2:=TrialDivision(numx,divisionbound);
-  trinum2:=trinum2 cat [1];
-  assert (&*[ a[1]^a[2] : a in trinum1 ])*trinum2[1] eq Abs(numx);
+    trinum1,trinum2:=TrialDivision(numx,divisionbound);
+    Append(~trinum1,<1,1>);
+    trinum2:=trinum2 cat [1];
+    assert (&*[ a[1]^a[2] : a in trinum1 ])*trinum2[1] eq Abs(numx);
 
-  triden1,triden2:=TrialDivision(denx,divisionbound);
-  triden2:=triden2 cat [1];
-  assert (&*[ a[1]^a[2] : a in triden1 ])*triden2[1] eq Abs(denx);
+    triden1,triden2:=TrialDivision(denx,divisionbound);
+    Append(~triden1,<1,1>);
+    triden2:=triden2 cat [1];
+    assert (&*[ a[1]^a[2] : a in triden1 ])*triden2[1] eq Abs(denx);
 
-  newnum:=(&*[ a[1]^(a[2] mod 2) : a in trinum1 ])*trinum2[1];
-  newden:=(&*[ a[1]^(a[2] mod 2) : a in triden1 ])*triden2[1];
+    newnum:=(&*[ a[1]^(a[2] mod 2) : a in trinum1 ])*trinum2[1];
+    newden:=(&*[ a[1]^(a[2] mod 2) : a in triden1 ])*triden2[1];
 
-  newx:=Sign(x)*newnum*newden;
+    newx:=Sign(x)*newnum*newden;
 
-  return newx;
+    return newx;
+  end if;
 end intrinsic;
 
 
@@ -223,6 +229,31 @@ intrinsic SquarefreeFactorization(phi::FldFunFracSchElt[CrvEll[FldRat]]) -> FldF
 
   return phi_sqfree;
 end intrinsic;
+
+
+intrinsic Sprint(seq::SeqEnum : oneline:=false) -> MonStgElt 
+  {Sprint the sequence seq, if oneline is true then return it as a one-line string.}
+  if oneline eq false then 
+    return Sprint(seq);
+  else 
+    if Type(seq[1]) eq GrpPermElt then 
+      degree:=Degree(Parent(seq[1]));
+      elts:=Sprintf("[ Sym(%o) |",degree) cat (&cat[ Sprintf(" %o,",elt) : elt in seq ]);
+      elts:=ReplaceAll(elts,"Id($)",Sprintf("Id(Sym(%o))",degree));
+    else 
+      elts:="[" cat (&cat[ Sprintf(" %o,",elt) : elt in seq ]);
+    end if;
+
+    Prune(~elts);
+    elts:=elts cat " ]";
+    ev:=eval(elts);
+    assert ev eq seq;
+    return elts;
+  end if;
+end intrinsic;
+
+
+
 
 
 

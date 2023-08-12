@@ -350,6 +350,8 @@ intrinsic IsCoercible(OmodN::AlgQuatOrdRes, x::Any) -> BoolElt, .
     else 
       return false, "Illegal Coercion";  
     end if;  
+  elif IsCoercible(OmodN`quaternionorder,x) then 
+    return true, OmodNElement(OmodN,(OmodN`quaternionorder)!x);
   else
     return false, "Illegal Coercion";
   end if;
@@ -370,6 +372,8 @@ intrinsic IsCoercible(BxmodFx::AlgQuatProj, x::Any) -> BoolElt, .
     else   
       return false, "Illegal Coercion";   
     end if;
+  elif IsCoercible(BxmodFx`quaternionalgebra,x) then 
+    return true, ElementModuloScalars(BxmodFx,(BxmodFx`quaternionalgebra)!x);
   else
     return false, "Illegal Coercion";
   end if;

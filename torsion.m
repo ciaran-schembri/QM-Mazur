@@ -201,12 +201,30 @@ intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bou
   assert Type(BaseRing(C)) eq FldNum;
   K:=BaseRing(C);
   OK:=Integers(K);
+  f, h := HyperellipticPolynomials(C);
+  cofs := {c : c in Eltseq(h) cat Eltseq(f)};
   group_invs:=PrimaryAbelianInvariants(group);
-  bad_p:=Discriminant(C)*2*OK;
-
-  primes:=[ Factorization(a*OK)[1,1] : a in PrimesUpTo(bound) | GCD(bad_p,a*OK) eq 1*OK and Norm(Factorization(a*OK)[1,1]) eq a ];
+  bad_p_norm:=Norm(Discriminant(C)*2*OK);
+  support := PrimeDivisors(Numerator(bad_p_norm)) cat PrimeDivisors(Denominator(bad_p_norm));
+  
+  disc := Discriminant(C); // needed to check for good reduction
+  // We look at all primes above prime numbers up to 200.
+  // We require the ramification index to be less than the residue characteristic minus 1,
+  // since this guarantees that the reduction map is injective on torsion.
+  // This is needed here and also in Order below.
+  cofs := {c : c in Eltseq(h) cat Eltseq(f)};
+  pl := &cat[[e[1] : e in Decomposition(OK, p) | e[2] lt p-1] : p in PrimesInInterval(3, bound)];
+  // "Good reduction" here includes p-integral coefficients.
+  pl := [p : p in pl | Valuation(disc, p) eq 0 and forall{c : c in cofs | Valuation(c, p) ge 0}];
+  //Sort(~pl, func<p1, p2 | Norm(p1)-Norm(p2)>);
+  //s := 1;
+  primes:=pl;
+  //primes:=[ Factorization(a*OK)[1,1] : a in PrimesUpTo(bound) | not(PrimeDivisors(Norm(a*OK)) subset support) and IsPrime(Norm(Factorization(a*OK)[1,1])) ];
+  //primes:=[ p : p in primes | | Set([Coefficients(C)]) ];
+  
   possible_groups:=[];
-  Cp:=ChangeRing(C,ResidueClassField(primes[1]));
+  Fp, red := ResidueClassField(primes[1]);
+  Cp := BaseExtend(C, map<K -> Fp | a :-> red(a)>);
   all_possible_groups:=JacobianGroupTwistsFiniteField(Cp);
   invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in all_possible_groups ]));
   all_possible_groups:=[ AbelianGroup(I) : I in invs ];
@@ -214,7 +232,9 @@ intrinsic TorsionGroupHeuristicUpToTwist(C::CrvHyp:group:=AbelianGroup([1]), bou
   Exclude(~primes,primes[1]);
   flag_subgroup:=true;
   for p in primes do 
-    Cp:=ChangeRing(C,ResidueClassField(p));
+    Fp, red := ResidueClassField(p);
+    Cp := BaseExtend(C, map<K -> Fp | a :-> red(a)>);
+
     group_twists:=JacobianGroupTwistsFiniteField(Cp); 
     grps:=&cat[ [ IntersectAbelianGroups(A,B) : B in group_twists ] : A in all_possible_groups ];
     invs:=Setseq(Set([ PrimaryAbelianInvariants(G) : G in grps ]));

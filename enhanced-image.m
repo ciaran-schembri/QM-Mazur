@@ -131,6 +131,22 @@ intrinsic UnitGroupToGL4(x::AlgQuatOrdElt : basis:=[]) -> GrpMatElt
   //assert ZmodN!Determinant(x_map) ne 0;
   return M4R!x_map;
 end intrinsic;
+
+
+
+intrinsic UnitGroupToGL4(x::AlgQuatOrdResElt : basis:=[]) -> GrpMatElt 
+  {O is an order over R, this returns a matrix [lambda_g] wrt to a basis
+  which is the right regular representation
+  lambda_x : y --> y*x where g \in GL_1(O)}
+
+
+  O:=Parent(x`element);
+  if basis eq [] then 
+    basis:=Basis(O);
+  end if;
+
+  return UnitGroupToGL4(x`element : basis:=basis);
+end intrinsic;
  
 
 
@@ -170,12 +186,12 @@ intrinsic EnhancedSemidirectInGL4modN(Ocirc::AlgQuatEnh,N::RngIntElt : basis:=[]
   {create the map from the semidirect product to GL4}
 
   O:=Ocirc`quaternionorder;
-  R:=Ocirc`basering;
+  //R:=O`basering;
+  //GL4:=GL(4,R);
+  //assert R eq Integers();
   if basis eq [] then 
     basis:=Basis(O);
   end if;
-  GL4:=GL(4,R);
-  assert R eq Integers();
 
   ZmodN:=ResidueClassRing(N);
   GL4:=GL(4,ZmodN);
@@ -521,6 +537,65 @@ intrinsic Aut(O::AlgQuatOrd,mu::AlgQuatElt) -> Any
 end intrinsic;
 
 
+intrinsic EnhancedCosetRepresentation(H::GrpMat, G::GrpMat,O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any 
+  {Make the coset representation of H in G}
+  N:=#BaseRing(H);
+
+  NBOplusgens:=NormalizerPlusGeneratorsEnhanced(O,mu);
+  NBOplusgensGL4:=[ EnhancedElementInGL4modN(g,N) : g in NBOplusgens ]; 
+
+  assert -G!1 in G;
+  Gplus:=sub< G | NBOplusgensGL4 >;
+  assert #G/#Gplus eq 2;
+  GO:= G meet sub< GL(4,ResidueClassRing(N)) | UnitGroup(O,N) >;
+
+  K:=[ k : k in SemidirectToNormalizerKernel(O,mu) ];
+  KG:=sub< Gplus | [ EnhancedElementInGL4modN(k,N) : k in K ] >;
+ 
+  Gplusquo,Gmap:= quo< Gplus | KG >;
+
+  Hplus := sub< Gplus | H meet Gplus >;
+  HplusKG:= sub< Gplus | Hplus, KG >;
+  HplusKGquoalt:= quo< HplusKG | KG >;
+
+  Hplusquo:=Gmap(Hplus);
+
+  T:=CosetTable(Gplusquo,Hplusquo);
+  piH:=CosetTableToRepresentation(Gplusquo,T);
+
+  return piH;
+end intrinsic;
+
+
+intrinsic EnhancedRamificationData(H::GrpMat, G::GrpMat,O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any
+  {return the image of the elliptic elements under the monodromy map}
+
+  N:=#BaseRing(H);
+  assert -G!1 in G;
+  NBOplusgens:=NormalizerPlusGeneratorsEnhanced(O,mu);
+  NBOplusgensGL4:=[ EnhancedElementInGL4modN(g,N) : g in NBOplusgens ]; 
+  Gplus:=sub< G | NBOplusgensGL4 >;
+ 
+  elliptic_eltsGL4:= [ EnhancedElementInGL4modN(e,N) : e in EnhancedEllipticElements(O,mu) ]; 
+  K:=[ k : k in SemidirectToNormalizerKernel(O,mu) ];
+  KG:=sub< Gplus | [ EnhancedElementInGL4modN(k,N) : k in K ] >;
+
+  Gplusquo,Gmap:= quo< Gplus | KG >;
+
+  piH:=EnhancedCosetRepresentation(H,G,O,mu);
+  sigma := [ piH(Gmap(v)) : v in elliptic_eltsGL4 ];
+
+  return sigma;
+end intrinsic;
+
+
+intrinsic EnhancedGenus(H::GrpMat, G::GrpMat,O::AlgQuatOrd,mu::AlgQuatOrdElt) -> Any 
+  {compute the genus}
+
+  sigma:=EnhancedRamificationData(H,G,O,mu);
+  return EnhancedGenus(sigma);
+end intrinsic;
+
 
 intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : minimal:=false,PQMtorsion:=false,verbose:=true, lowgenus:=false, write:=false) -> Any
   {return all of the enhanced subgroups in a list with each one being a record}
@@ -658,21 +733,26 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Basis of O is %o\n", Basis(O);
       printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators\n";
+      print "Genus ? (Fuchsian) Index ? #H ? Torsion ? Gal(L|Q) ? AutmuO norms ? Split semidirect ? Generators ? Ramification Data \n";
       for s in minimal_subs_init do 
-        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators, s`ramification_data;
+        printf "%o ? %o ? %o ? %o ? %o ? %o ? %o ? %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators, Sprint(s`ramification_data : oneline:=true);
       end for;
       if write eq true then 
         filename:=Sprintf("QM-Mazur/genera-tables/genera-D%o-deg%o-N%o.m",D,del,N);
-        Write(filename,Sprintf("%o",B));
-        Write(filename,Sprintf("Discriminant %o",Discriminant(O)));
-
-        Write(filename,Sprintf("Basis of O is %o", Basis(O)));
-        Write(filename,Sprintf("Level N = %o", N));
+        Write(filename,Sprintf("%m;",B));
+        Write(filename,Sprintf("%o;",Basis(O)));
+        Write(filename,Sprintf("%o;",N));
+        Write(filename,Sprintf("%o;",Eltseq(O!mu)));
+        //Write(filename,Sprintf("Discriminant %o",Discriminant(O)));
+        //Write(filename,Sprintf("Basis of O is %o", Basis(O)));
+        //Write(filename,Sprintf("Level N = %o", N));
         Write(filename,Sprintf("Polarized Element \\mu=%o of degree %o and norm %o", mu, DegreeOfPolarizedElement(O,mu),Norm(mu)));
-        Write(filename,"Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators");
+        Write(filename,"Genus ? (Fuchsian) Index ? #H ? Torsion ? Gal(L|Q) ? AutmuO norms ? Split semidirect ? Generators ? Ramification Data");
+
         for s in minimal_subs_init do 
-          Write(filename,Sprintf("%o || %o || %o || %o || %o || %o || %o || %o || %o", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, s`generators, s`ramification_data));
+          gens_readable:=[ Sprintf("< %o, %o >", g[1], Eltseq(g[2]`element)) : g in s`generators ];
+          gens_readable;
+          Write(filename,Sprintf("%o ? %o ? %o ? %o ? %o ? %o ? %o ? %o ? %o", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, gens_readable, Sprint(s`ramification_data : oneline:=true)));
         end for;
       end if;
     end if;
@@ -699,9 +779,9 @@ intrinsic AllEnhancedSubgroups(O::AlgQuatOrd,mu::AlgQuatOrdElt,N::RngIntElt : mi
       printf "Basis of O is %o\n", Basis(O);
       printf "Level N = %o\n", N;
       printf "Polarized Element \\mu=%o of degree %o and norm %o\n", mu, DegreeOfPolarizedElement(O,mu),Norm(mu);
-      print "Genus || (Fuchsian) Index || #H || Torsion || Gal(L|Q) || AutmuO norms || Split semidirect || Generators\n";
+      print "Genus ? (Fuchsian) Index ? #H ? Torsion ? Gal(L|Q) ? AutmuO norms ? Split semidirect ? Generators ? Ramification Data\n";
       for s in minimal_subs do 
-        printf "%o || %o || %o || %o || %o || %o || %o || %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, Sprint(s`generators), s`ramification_data;
+        printf "%o ? %o ? %o ? %o ? %o ? %o ? %o ? %o \n", s`genus, s`index, s`order, s`fixedsubspace, s`endomorphism_representation, s`AutmuO_norms, s`split, Sprint(s`generators), Sprint(s`ramification_data : oneline:=true);
       end for;
     end if;
     return minimal_subs;

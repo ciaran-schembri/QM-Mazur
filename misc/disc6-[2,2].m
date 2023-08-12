@@ -1,48 +1,44 @@
-/*rec<recformat<n: IntegerRing(), subgroup, genus, order, index, fixedsubspace, generators, split, endomorphism_representation, AutmuO_norms, ramification_data> | 
-subgroup := MatrixGroup(4, IntegerRing(4)) of order 2^4
-Generators:
-[3 0 0 0]
-[1 1 0 0]
-[1 0 1 0]
-[0 0 0 3]
 
-[3 0 0 2]
-[0 3 0 1]
-[3 0 1 1]
-[0 0 0 1]
+/*monodromy:=[ Sym(24) | 
+(1, 14)(2, 13)(3, 16)(4, 15)(5, 19)(6, 20)(7, 17)(8, 18)(9, 24)(10, 23)(11, 22)(12, 21),
+(1, 24, 4, 23)(2, 22, 3, 21)(5, 14, 6, 16)(7, 15, 8, 13)(9, 19, 11, 18)(10, 17, 12, 20),
+(1, 10, 6)(2, 12, 7)(3, 11, 5)(4, 9, 8)(13, 18, 22)(14, 19, 24)(15, 17, 23)(16, 20, 21) 
+]; //the one JV found.
 
-[1 0 0 0]
-[2 3 2 2]
-[0 2 3 2]
-[2 0 0 1]
-
-[1 0 0 0]
-[2 1 0 0]
-[2 2 3 2]
-[0 2 2 3],
-genus := 1,
-order := 16,
-index := 24,
-fixedsubspace := [ 2, 4 ],
-generators := <<1, [1 2 2 0]>, <1, [1 2 0 2]>, <i, [1 3 3 0]>, <-3*j + k, [2 0 1 0]>>,
-split := false,
-endomorphism_representation := C2^2,
-AutmuO_norms := { 1, 2, 3, 6 },*/
-
-
-ramification_data := [ Sym(24) |
-(1, 2, 5, 12, 20, 11)(3, 4, 10, 17, 21, 16)(6, 7, 15, 23, 24, 14)(8, 9, 13, 22, 18, 19),
-(1, 3, 8, 7)(2, 6, 14, 13)(4, 11, 18, 10)(5, 9, 16, 21)(12, 17, 22, 24)(15, 19, 20, 23),
-(1, 4)(2, 7)(3, 9)(5, 13)(8, 15)(11, 19)(12, 21)(14, 22)(17, 18)(20, 24)
-];
+//GeneraTableToRecords(6,1,4: genus:=0, fuchsindex:=24, AutmuOnorms:={1,3}, torsioninvariants:=[2,2]);
+ramification_data:=[ Sym(24) | 
+(1, 2, 5)(3, 4, 10)(6, 7, 15)(8, 9, 16)(11, 12, 20)(13, 14, 21)(17, 18, 19)(22, 23, 24),
+(1, 3, 8, 7)(2, 6, 13, 12)(4, 5, 11, 18)(9, 10, 17, 23)(14, 15, 16, 22)(19, 20, 21, 24),
+(1, 4)(2, 7)(3, 9)(5, 12)(6, 14)(8, 15)(10, 18)(11, 19)(13, 20)(16, 23)(17, 24)(21, 22)
+]; //the one the genera computations found.*/
+B<i,j>:=QuaternionAlgebra<Rationals() | 3,-1 >;
+O:=QuaternionOrder([ 1, 1/2 + 1/2*i + 1/2*j + 1/2*k, 1/2 - 1/2*i + 1/2*j - 1/2*k, 1/2 - 1/2*i - 1/2*j + 1/2*k ]);
+[B!(O![1, 2, 2, 0]),
+B!(O![3, 2, 0, 2]),
+B!(O![3, 0, 0, 0]),
+B!(O![3, 1, 0, 3]),
+B!(O![3, 1, 1, 0])];
+G:=sub< Sym(24) | monodromy >;
 
 load "primitive-belyi-maps/code/primitivize.m";
 
-X,phi:=BelyiMap(ramification_data);
+X,phi:=BelyiMap(monodromy);
 X;
 phi;
 //////////////////////////////
 //this is (X,phi)
+
+
+
+
+
+
+
+
+
+
+
+
 
 S<x>:=PolynomialRing(Rationals());
 X:=EllipticCurve(S!x^3 + 27/242*x + 189/10648,S!0);
@@ -52,7 +48,7 @@ phi:= (864/1331*x^9 + 34992/161051*x^7 + 61236/1771561*x^6 + 472392/19487171*x^5
 A,map:=MordellWeilGroup(X); //Z/2 + Z
 Q:=map(A.2);  //generator
 //checking ramification indices to match up with Baba-Granath's j-line we must 
-//do the linear fractional transformation 0-->oo, 1-->0, oo->--16/27 which is LFT(phi,[3,2,1])
+//do the linear fractional transformation 0-->oo which is LFT(phi,[3,2,1]) or LFT(phi,[3,1,2]);
 
 perm:=[3,2,1];
 BelyiMap:=LFT(phi,perm);

@@ -2,7 +2,7 @@
 intrinsic Read(line::MonStgElt) -> Rec
   {turn the line of data into a record}
 
-  split:=Split(line,"||");
+  split:=Split(line,"?");
 
   genus:=Integers()!eval(split[1]);
   fuchsindex:=eval(split[2]);
@@ -10,6 +10,8 @@ intrinsic Read(line::MonStgElt) -> Rec
   endogroup:=split[5];
   AutmuOnorms:=eval(split[6]);
   Hsplit:=eval(split[7]);
+  generators:=split[8];
+  ramification_data:=eval(split[9]);
 
   RF := recformat< n : Integers(),
   genus,
@@ -17,7 +19,9 @@ intrinsic Read(line::MonStgElt) -> Rec
   torsioninvariants,
   endogroup,
   AutmuOnorms,
-  Hsplit
+  Hsplit,
+  generators,
+  ramification_data
   >;
 
   s := rec< RF | >;
@@ -27,29 +31,49 @@ intrinsic Read(line::MonStgElt) -> Rec
   s`endogroup:=endogroup;
   s`AutmuOnorms:=AutmuOnorms;
   s`Hsplit:=Hsplit;
+  s`generators:=generators;
+  s`ramification_data := ramification_data;
   
   return s;
 end intrinsic;
 
 
-intrinsic GeneraTableToRecords(D::RngIntElt,del::RngIntElt,N::RngIntElt) -> Any 
+intrinsic GeneraTableToRecords(D::RngIntElt,del::RngIntElt,N::RngIntElt : genus:=-1, fuchsindex:=-1, endogroup:="any", torsioninvariants:=[-1], AutmuOnorms:={0}, sort:=true) -> Any 
   {}
   filename:=Sprintf("QM-Mazur/genera-tables/genera-D%o-deg%o-N%o.m",D,del,N);
   r:=Open(filename,"r");
 
   records:=[];
+  //i:=1;
   while true do
     line :=Gets(r);
     if IsEof(line) then
       break;
     end if;
 
-    if "<" in line then 
-      s:=Read(line);
-      Append(~records,s);
-    end if;
-  end while;
+    //if i eq 1 then 
+     // ;
+    //end if;
 
+    if "<" in line and "QuaternionAlgebra" notin line then 
+      s:=Read(line);
+      if (s`genus eq genus or genus eq -1) 
+        and (s`fuchsindex eq fuchsindex or fuchsindex eq -1)
+         and (torsioninvariants eq [-1] or torsioninvariants eq s`torsioninvariants)  
+          and (endogroup eq "any" or s`endogroup eq endogroup) 
+            and (s`AutmuOnorms eq AutmuOnorms or AutmuOnorms eq {0}) 
+             then   
+        Append(~records,s);
+      end if;
+    end if;
+    //i:=i+1;
+  end while;
+  
+  if sort eq true then 
+    //sort by fuchsianindex
+    fuchsindicies:= [ s`fuchsindex : s in records ];
+    ParallelSort(~fuchsindicies,~records);
+  end if;
   return records;
 end intrinsic;
 

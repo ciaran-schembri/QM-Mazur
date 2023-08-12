@@ -1,5 +1,5 @@
 
-AttachSpec("spec");
+
 
 Rx<x>:=PolynomialRing(Rationals());
 //this is phi : X^*(6,P2) -> X^*(6,1)
@@ -80,10 +80,10 @@ disc3:=Discriminant(f3);
 
 
 
-height_init:=1;
+height_init:=2;
 small_ht:=Setseq(Set([ a/b : a,b in [-height_init..height_init] | a*b ne 0 ]));
 list:=[];
-size:=10000;
+size:=10;
 height:=height_init;
 while #list lt size do
   extra_a:=[ height/b : b in [-height..height] | b ne 0 and GCD(height,b) eq 1 ];
@@ -91,18 +91,15 @@ while #list lt size do
   extra := extra_a cat extra_b;
   height:=height+1;
   for q in extra do
-    d1:=Evaluate(disc1,q);
-    d2:=Evaluate(disc2,q);
-    d3:=Evaluate(disc3,q);
-
-    tr1:=IsSquare(d1);
-    tr2:=IsSquare(d2);
-    tr3:=IsSquare(d3);
-
-    if tr1 or tr2 or tr3 then
-      q;
-      d1; d2; d3;
-      print "/////////////////";
-    end if;
+    j:=phi(X![q,1]);
+    IgusaClebsch:=PQMIgusaClebsch(6,j : LinYang:=false);
+    C:=HyperellipticCurveFromIgusaClebsch(IgusaClebsch);
+    assert BaseRing(C) eq Rationals();
+    j; AB:=TorsionSubgroup(Jacobian(IntegralModel(C)));
+    GroupName(AB);
   end for;
 end while;
+
+
+GeneratePQMCurves(6 : endomorphisms:=true, LinYang:=false, MestreIsSplit:=true,BelyiMap:=phi);
+
