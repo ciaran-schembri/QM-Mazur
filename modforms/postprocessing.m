@@ -88,7 +88,8 @@ for V in probPQM do
     VQQ := Kernel(HeckeOperator(M,aps[1][1])-aps[1][2]);
     if Dimension(VQQ) le 2 then continue; end if;
     for ap in aps do
-      Tp := HeckeOperator(M,ap[1]);
+      printf "p = %o\n", ap[1];
+      time Tp := HeckeOperator(M,ap[1]);
       TpVQQ := makemat(Tp, [VQQ]);
       KTpVQQ := Kernel(TpVQQ - ap2);
       VQQ := sub<VQQ | Rows(Matrix(Basis(KTpVQQ))*Matrix(Basis(VQQ)))>;
