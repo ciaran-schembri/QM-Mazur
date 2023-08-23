@@ -205,29 +205,37 @@ end intrinsic;
 
 
 
-intrinsic SquarefreeFactorization(phi::FldFunFracSchElt[CrvEll[FldRat]]) -> FldFunFracSchElt[CrvEll[FldRat]]
+intrinsic SquarefreeFactorization(phi::FldFunFracSchElt[Crv[FldRat]]) -> FldFunFracSchElt[CrvEll[FldRat]]
   {If phi(x) = f(x)/g(x) and f = c^2*f0, g = d^2*g0 with f0, g0 irreducible; return f0/g0.}
   
-  KX<x,y>:=Parent(phi);
+  KX<x>:=Parent(phi);
   phi_num:=KX!Numerator(phi);
   phi_den:=KX!Denominator(phi);
 
   Rz<z>:=PolynomialRing(Rationals());
-  phi_numz:=Rz!Evaluate(phi_num,[z]);
-  phi_denz:=Rz!Evaluate(phi_den,[z]);
+  phi_numz:=Rz!eval(ReplaceAll(Sprint(phi_num),"x","z"));
+  phi_denz:=Rz!eval(ReplaceAll(Sprint(phi_den),"x","z"));
 
   fac_numz:=Factorization(phi_numz);
   fac_denz:=Factorization(phi_denz);
 
-  fac_l1:=Factorization(LeadingCoefficient(phi_numz));
-  fac_l2:=Factorization(LeadingCoefficient(phi_denz));
+  fac_l1:=Factorization(LeadingCoefficient(phi_numz)) cat [ <1,1> ];
+  fac_l2:=Factorization(LeadingCoefficient(phi_denz)) cat [ <1,1> ];
 
   newnumz:=(&*[ a[1]^(a[2] mod 2) : a in fac_l1 ])*(&*[ a[1]^(a[2] mod 2) : a in fac_numz ]);
   newdenz:=(&*[ a[1]^(a[2] mod 2) : a in fac_l2 ])*(&*[ a[1]^(a[2] mod 2) : a in fac_denz ]);
-  
-  phi_sqfree:=(KX!Evaluate(newnumz,x))/(KX!Evaluate(newdenz,x));
 
-  return phi_sqfree;
+  c:=(&*[ a[1]^Integers()!((a[2]-(a[2] mod 2))/2) : a in fac_l1 ])*(&*[ a[1]^Integers()!((a[2]-(a[2] mod 2))/2) : a in fac_numz ]);
+  d:=(&*[ a[1]^Integers()!((a[2]-(a[2] mod 2))/2) : a in fac_l2 ])*(&*[ a[1]^Integers()!((a[2]-(a[2] mod 2))/2) : a in fac_denz ]);
+
+  phi_sqfree:=KX!((KX!Evaluate(newnumz,x))/(KX!Evaluate(newdenz,x)));
+  //phi = (c/d)^2*(f/g);
+  c:=KX!Evaluate(c,x);
+  d:=KX!Evaluate(d,x);
+  cdivd:=KX!(c/d);
+  //assert Sprint(phi) eq Sprint(cdivd^2*phi_sqfree);
+
+  return phi_sqfree, c/d;
 end intrinsic;
 
 

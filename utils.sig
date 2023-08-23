@@ -7,5 +7,5 @@ S,IsNumberField,Take the associative algebra over Q and make a number field,0,1,
 S,SquarefreeFactorization,squarefree factorization of a rational number,0,1,0,0,0,0,0,0,0,267,,267,-38,-38,-38,-38,-38
 S,RepresentativeModuloSquares,"x = q^2*a where a is a squarefree integer, return a",0,1,0,0,0,0,0,0,0,267,,148,-38,-38,-38,-38,-38
 S,TrialRepresentativeModuloSquares,"x = q^2*a where a is a squarefree integer, return a",0,1,0,0,0,0,0,0,0,267,,148,-38,-38,-38,-38,-38
-S,SquarefreeFactorization,"If phi(x) = f(x)/g(x) and f = c^2*f0, g = d^2*g0 with f0, g0 irreducible; return f0/g0",1,0,1,427,1,334,0,262,1,0,0,0,0,0,0,0,427,,427,-38,-38,-38,-38,-38
+S,SquarefreeFactorization,"If phi(x) = f(x)/g(x) and f = c^2*f0, g = d^2*g0 with f0, g0 irreducible; return f0/g0",1,0,1,427,1,371,0,262,1,0,0,0,0,0,0,0,427,,427,-38,-38,-38,-38,-38
 S,Sprint,"Sprint the sequence seq, if oneline is true then return it as a one-line string",0,1,0,0,0,0,0,0,0,82,,298,-38,-38,-38,-38,-38
