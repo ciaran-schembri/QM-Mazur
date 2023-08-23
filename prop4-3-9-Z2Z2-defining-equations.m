@@ -1419,7 +1419,7 @@ quadratic_factors:=[
 
 
 f:=&*quadratic_factors;
-C:=HyperellipticCurve(f);
+
 
 
 
