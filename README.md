@@ -1,3 +1,6 @@
+Below is auxilliary code the paper "RATIONAL TORSION POINTS ON ABELIAN SURFACES WITH
+QUATERNIONIC MULTIPLICATION" https://arxiv.org/pdf/2308.15193
+
 To verify the calculations in remark 2.3.3, either copy-paste the contents of the following file or load into Magma with:
 load "quaternionfixedpoints.m";
 
