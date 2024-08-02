@@ -9,7 +9,9 @@ To verify the calculations in remark 2.3.3, either copy-paste the contents of th
 
 > load "quaternionfixedpoints.m";
 
-The code used for the modular form computations in proposition 5.1.7 is in the file "modforms/qmsearch.m"
+The code used for the modular form computations in proposition 5.1.7 is in the file "modforms/qmsearch.m"; it has a dependency on the CMFs package, available at 
+https://github.com/JohnCremona/CMFs: replace the first line with the location of the file "mf.spec", located in
+https://github.com/JohnCremona/CMFs/tree/master/magma.
 
 To load the defining equation f of genus 2 curve $C_t$ in proposition 5.3.9, open Magma and type:
 
